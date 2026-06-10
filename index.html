@@ -355,6 +355,29 @@
 
         .reset-btn:hover { color: var(--muted); }
 
+        .live-dot {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.5rem;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--green-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .live-dot::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--green);
+            display: inline-block;
+        }
+
         .bump {
             display: inline-block;
             transition: transform 0.12s ease;
@@ -406,6 +429,7 @@
 </div>
 
 <button class="reset-btn" onclick="resetAll()">Reset</button>
+<div class="live-dot">Live</div>
 
 <!-- FACTS MODAL -->
 <div class="modal-overlay" id="factsModal">
