@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>—</title>
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #F6F5F1;
+            --surface: #EDECE8;
+            --text: #19181A;
+            --muted: #96938D;
+            --border: #E0DEDB;
+            --green: #2A6049;
+            --green-bg: #EBF5F0;
+            --green-muted: #3D7A5E;
+        }
+
+        [data-theme="dark"] {
+            --bg: #111110;
+            --surface: #1C1B1A;
+            --text: #E6E4DE;
+            --muted: #5C5A55;
+            --border: #252422;
+            --green: #4A9070;
+            --green-bg: #152219;
+            --green-muted: #5AAF85;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            transition: background 0.2s, color 0.2s;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Loading state — numbers invisible until Supabase responds, preserving layout */
+        body.loading #sessionsNum,
+        body.loading #daysNum {
+            visibility: hidden;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .theme-toggle:hover { border-color: var(--muted); color: var(--text); }
+
+        /* Clock */
+        .clock {
+            font-size: 5rem;
+            font-weight: 200;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            color: var(--text);
+            margin-bottom: 0.3rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .date-line {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            margin-bottom: 2.5rem;
+        }
+
+        /* Divider */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            margin-bottom: 0;
+        }
+
+        .stat { padding: 0.25rem 0; }
+
+        .stat:first-child {
+            padding-right: 2rem;
+            border-right: 1px solid var(--border);
+        }
+
+        .stat:last-child { padding-left: 2rem; }
+
+        .stat-number {
+            font-size: 3.25rem;
+            font-weight: 600;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            color: var(--text);
+            transition: transform 0.1s ease;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            margin-top: 0.45rem;
+        }
+
+        /* Buttons */
+        .status-row { display: flex; flex-direction: column; gap: 0.55rem; }
+
+        .status-btn {
+            width: 100%;
+            padding: 0.85rem 1.1rem;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--surface);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.15s ease;
+        }
+
+        .status-btn:hover { border-color: var(--muted); color: var(--text); }
+
+        .status-btn.active {
+            border-color: var(--green);
+            background: var(--green-bg);
+            color: var(--green-muted);
+        }
+
+        .status-icon { font-size: 0.9rem; }
+
+        .add-btn {
+            width: 100%;
+            margin-top: 0.55rem;
+            padding: 0.7rem 1.1rem;
+            border: 1px dashed var(--border);
+            border-radius: 7px;
+            background: none;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .add-btn:hover { border-color: var(--text); color: var(--text); border-style: solid; }
+
+        /* Modal triggers */
+        .modal-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.55rem;
+        }
+
+        .modal-btn {
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: none;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .modal-btn:hover { border-color: var(--text); color: var(--text); }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            max-width: 540px;
+            width: 100%;
+            max-height: 82vh;
+            overflow-y: auto;
+            padding: 1.75rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--muted);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.2rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover { color: var(--text); }
+
+        /* Modal content */
+        .mc h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 1.4rem 0 0.4rem;
+        }
+
+        .mc h2:first-child { margin-top: 0; }
+
+        .mc p {
+            font-size: 0.85rem;
+            line-height: 1.65;
+            color: var(--muted);
+            margin-bottom: 0.6rem;
+        }
+
+        .mc strong { color: var(--text); font-weight: 600; }
+
+        .mc .big {
+            font-size: 2.75rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: var(--text);
+            display: block;
+            line-height: 1;
+            margin: 0.5rem 0 0.25rem;
+        }
+
+        .mc ul { list-style: none; padding: 0; }
+
+        .mc ul li {
+            font-size: 0.83rem;
+            color: var(--muted);
+            padding: 0.55rem 0 0.55rem 1rem;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+            line-height: 1.5;
+        }
+
+        .mc ul li:last-child { border-bottom: none; }
+
+        .mc ul li::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: var(--border);
+        }
+
+        .mc ul li strong { color: var(--text); }
+
+        .callout {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 0.9rem 1rem;
+            margin: 1rem 0;
+            font-size: 0.83rem;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .callout strong { color: var(--text); }
+
+        .mhr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.25rem 0;
+        }
+
+        /* Reset */
+        .reset-btn {
+            position: fixed;
+            bottom: 1.25rem;
+            left: 1.5rem;
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: 0.6rem;
+            color: var(--border);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: color 0.15s;
+        }
+
+        .reset-btn:hover { color: var(--muted); }
+
+        .bump {
+            display: inline-block;
+            transition: transform 0.12s ease;
+        }
+    </style>
+</head>
+<body class="loading">
+
+<button class="theme-toggle" id="themeToggle">☾</button>
+
+<div class="page">
+
+    <div class="clock" id="clock">00:00</div>
+    <div class="date-line" id="dateLine">—</div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-number"><span class="bump" id="sessionsNum">0</span></div>
+            <div class="stat-label">Sessions Avoided</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number" id="daysNum">1</div>
+            <div class="stat-label">Days Active</div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="status-row">
+        <button class="status-btn" id="exerciseBtn" onclick="toggleExercise()">
+            <span id="exerciseLabel">Exercise</span>
+            <span class="status-icon" id="exerciseIcon">○</span>
+        </button>
+        <button class="status-btn" id="windowBtn" onclick="toggleWindow()">
+            <span id="windowLabel">Window Closed</span>
+            <span class="status-icon" id="windowIcon">⊘</span>
+        </button>
+    </div>
+
+    <button class="add-btn" onclick="addAvoided()">+ Mark Session Avoided</button>
+
+    <hr>
+
+    <div class="modal-row">
+        <button class="modal-btn" onclick="openModal('facts')">The Facts ↗</button>
+        <button class="modal-btn" onclick="openModal('system')">The System ↗</button>
+    </div>
+
+</div>
+
+<button class="reset-btn" onclick="resetAll()">Reset</button>
+
+<!-- FACTS MODAL -->
+<div class="modal-overlay" id="factsModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">The Cold Hard Facts</span>
+            <button class="modal-close" onclick="closeModal('facts')">✕</button>
+        </div>
+        <div class="mc">
+            <h2>The Time Maths</h2>
+            <p>5 hours a day. Every day.</p>
+            <span class="big">76</span>
+            <p>Full days per year. Not hours. <strong>Days.</strong> Two and a half months, annually, in a trance. Over five years: roughly a year of your life gone while conscious.</p>
+
+            <hr class="mhr">
+
+            <h2>What's Actually Happening in Your Brain</h2>
+            <p><strong>Dopamine system is broken — measurably.</strong> Same mesolimbic pathway as substance addiction. Brain downregulates receptors in response to supernormal stimulation. Lower sensitivity. Higher threshold required for the same response. Ordinary pleasures register flat. Content has to escalate to compensate.</p>
+            <p>The wanting/liking dissociation: you want it without liking it. That's not a personality flaw. That's a broken reward circuit operating exactly as expected.</p>
+            <p><strong>Grey matter is reduced — measurably.</strong> Kühn & Gallinat (2014) neuroimaging found a significant negative correlation between grey matter volume in the reward centre and hours consumed. Heavy use also reduces connectivity between the reward system and the prefrontal cortex — the region responsible for impulse control. The one that goes offline mid-session.</p>
+            <p><strong>Attention and working memory are impaired.</strong> The task avoidance isn't purely psychological. The hardware is compromised.</p>
+
+            <hr class="mhr">
+
+            <h2>Escalation Is Physics, Not Character</h2>
+            <p>Tolerance is automatic. The brain habituates to repeated stimulus and requires increasing intensity. Content progression is a predictable consequence of frequency — not a reflection of who you are. <strong>Reduce frequency, tolerance resets. Content appetite de-escalates on its own. Weeks, not months.</strong></p>
+
+            <hr class="mhr">
+
+            <h2>Recovery Timeline</h2>
+            <ul>
+                <li><strong>Weeks 1–2:</strong> Withdrawal. Mood changes, cravings. Normal.</li>
+                <li><strong>Weeks 2–6:</strong> Flatline. Grey, motivationless. This is recalibration, not damage revealing itself.</li>
+                <li><strong>Months 2–3:</strong> Gradual improvement. Things register again. Food, music, ordinary life.</li>
+                <li><strong>~14 months:</strong> Dopamine transporter levels return to near-normal. (Substance addiction data — porn-specific timeline not established, but consistent direction.)</li>
+            </ul>
+            <p>The grey period is real. It passes.</p>
+
+            <hr class="mhr">
+
+            <h2>Sleep Is Not a Separate Problem</h2>
+            <p>The prefrontal cortex — the region directly impaired by compulsive use, and the one exercise is rebuilding — is also the first thing to degrade with sleep deprivation. <strong>A single night under six hours produces measurable impulse control impairment.</strong> Not a trend over weeks. One night.</p>
+            <p>Sleep deprivation also increases dopamine sensitivity in the reward pathway specifically. The craving hits harder and the brake fails simultaneously. Late nights are high-risk windows by default. The system assumes a version of you with baseline impulse control available — poor sleep removes that before the day starts.</p>
+
+            <hr class="mhr">
+
+            <h2>Why Exercise Is in the System</h2>
+            <p><strong>Six weeks of exercise measurably increases D2 receptor density</strong> — the exact receptors downregulated by compulsive use. Not a mood booster. Direct hardware repair.</p>
+            <p><strong>BDNF spikes with vigorous exercise.</strong> Neuroplasticity fertiliser. Accelerates the rewiring required.</p>
+            <p><strong>Prefrontal cortex volume increases</strong> with regular exercise over months. You are physically rebuilding the impulse control hardware that compulsive use eroded.</p>
+
+            <div class="callout">
+                You quit 40-a-day. You quit drinking. The capacity is demonstrably intact. The strategy just needed fixing.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SYSTEM MODAL -->
+<div class="modal-overlay" id="systemModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">The System</span>
+            <button class="modal-close" onclick="closeModal('system')">✕</button>
+        </div>
+        <div class="mc">
+            <div class="callout">
+                <strong>Core principle:</strong> In-session you cannot be trusted. All controls are pre-set. Nothing relies on in-session willpower. No concept that can break — slipping is inside the rules.
+            </div>
+
+            <h2>Infrastructure (Set and Forget)</h2>
+            <ul>
+                <li><strong>NextDNS — router level.</strong> Specific domains blocked on schedule. Lifts at 9pm on window days automatically. Back up in the morning automatically. AI generative content: permanently blocked regardless.</li>
+                <li><strong>uBlock Origin — aggressive settings.</strong> Every browser, every device. Kills accidental trigger vectors — adverts, thumbnails, recommendations. One-time setup.</li>
+                <li><strong>Grayscale — scheduled.</strong> On during blocked hours, lifts with the window. Fast manual toggle (accessibility shortcut) for design/code work during the day.</li>
+            </ul>
+
+            <h2>The Window</h2>
+            <ul>
+                <li>Designated days only — decided in advance, not in the moment</li>
+                <li>Opens automatically at 9pm via NextDNS schedule</li>
+                <li>Closes automatically in the morning</li>
+                <li><strong>Requires 20 minutes real exercise that day</strong></li>
+            </ul>
+
+            <h2>The Exercise Rule</h2>
+            <ul>
+                <li>20 minutes, elevated heart rate — 120bpm+ target</li>
+                <li>Mi Band data as validator. Objective. Non-negotiable.</li>
+                <li>Must happen that day, not immediately before the window (decoupled so the brain can't use "exercise kills the mood" as a reason to skip it)</li>
+                <li>No exercise = no window. Full stop.</li>
+            </ul>
+
+            <h2>The Session Goal</h2>
+            <p><strong>Quick finish is the explicit goal</strong> — not a consolation prize, an actual win. Gooning is addiction to the trance state, not climax. The blocked AI content removes the conditions the trance needs. Tag quick finishes as wins.</p>
+
+            <h2>Boredom Buffer</h2>
+            <p>Gaming during blocked hours. Lower shame ceiling, doesn't feed the same loop, easier to stop mid-session. Temporary — no fixed end date, no pressure.</p>
+
+            <h2>Tracking</h2>
+            <p>No streak counter. Track <strong>cumulative wins</strong> only — sessions avoided, exercise done. A slip is a lower number. Not a catastrophe. Not a restart.</p>
+
+            <h2>Sleep</h2>
+            <p>Load-bearing, not optional. Sleep deprivation impairs the prefrontal cortex — the exact hardware this system depends on. One bad night measurably tanks impulse control. Late nights are high-risk windows by default. Treat it like infrastructure.</p>
+
+            <hr class="mhr">
+
+            <p style="font-size:0.75rem; color:var(--muted);">One problem at a time. The system runs itself. Don't add anything else to it.</p>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL      = 'https://fybgariixiwgsjhjapwr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5YmdhcmlpeGl3Z3NqaGphcHdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzM4NzIsImV4cCI6MjA5NjY0OTg3Mn0.0mpI5iZIrSL1-wlSS6VFDsVxJhrJ4CzOkOOW2wz7vhM';
+    const USER_ID           = 'mike';
+
+    // ── Client ────────────────────────────────────────────────
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ── Helpers ───────────────────────────────────────────────
+    function todayStr() {
+        return new Date().toISOString().split('T')[0];
+    }
+
+    const DEFAULTS = {
+        theme:           'light',
+        sessionsAvoided: 0,
+        startDate:       todayStr(),
+        exerciseDate:    null,
+        windowDate:      null,
+    };
+
+    let S = { ...DEFAULTS };
+
+    // ── Supabase read ─────────────────────────────────────────
+    async function fetchState() {
+        try {
+            const { data, error } = await db
+                .from('tab_state')
+                .select('sessions_avoided, start_date, exercise_date, window_date, theme')
+                .eq('user_id', USER_ID)
+                .maybeSingle();
+
+            if (error || !data) return { ...DEFAULTS };
+
+            return {
+                theme:           data.theme           || 'light',
+                sessionsAvoided: data.sessions_avoided ?? 0,
+                startDate:       data.start_date      || todayStr(),
+                exerciseDate:    data.exercise_date   || null,
+                windowDate:      data.window_date     || null,
+            };
+        } catch(e) {
+            return { ...DEFAULTS };
+        }
+    }
+
+    // ── Supabase write ────────────────────────────────────────
+    async function save() {
+        try {
+            await db.from('tab_state').upsert(
+                {
+                    user_id:          USER_ID,
+                    sessions_avoided: S.sessionsAvoided,
+                    start_date:       S.startDate,
+                    exercise_date:    S.exerciseDate,
+                    window_date:      S.windowDate,
+                    theme:            S.theme,
+                    updated_at:       new Date().toISOString(),
+                },
+                { onConflict: 'user_id' }
+            );
+        } catch(e) {
+            // Silent fail — state lives in memory, will sync on next interaction
+        }
+    }
+
+    // ── State helpers ─────────────────────────────────────────
+    function exerciseDoneToday() { return S.exerciseDate === todayStr(); }
+    function windowOpenToday()   { return S.windowDate   === todayStr(); }
+
+    function daysActive() {
+        const start = new Date(S.startDate);
+        const now   = new Date();
+        const diff  = Math.floor((now - start) / 86400000);
+        return Math.max(0, diff) + 1;
+    }
+
+    // ── Actions ───────────────────────────────────────────────
+    async function toggleExercise() {
+        S.exerciseDate = exerciseDoneToday() ? null : todayStr();
+        render(); await save();
+    }
+
+    async function toggleWindow() {
+        S.windowDate = windowOpenToday() ? null : todayStr();
+        render(); await save();
+    }
+
+    async function addAvoided() {
+        S.sessionsAvoided++;
+        const el = document.getElementById('sessionsNum');
+        el.style.transform = 'scale(1.2)';
+        setTimeout(() => { el.style.transform = 'scale(1)'; }, 140);
+        render(); await save();
+    }
+
+    async function toggleTheme() {
+        S.theme = S.theme === 'light' ? 'dark' : 'light';
+        applyTheme(); await save();
+    }
+
+    async function resetAll() {
+        if (!confirm('Reset all tracking data?')) return;
+        S = { ...DEFAULTS, theme: S.theme };
+        render(); await save();
+    }
+
+    // ── Render ────────────────────────────────────────────────
+    function applyTheme() {
+        document.documentElement.setAttribute('data-theme', S.theme);
+        document.getElementById('themeToggle').textContent = S.theme === 'light' ? '☾' : '☀';
+    }
+
+    function render() {
+        document.getElementById('sessionsNum').textContent = S.sessionsAvoided;
+        document.getElementById('daysNum').textContent     = daysActive();
+
+        const done = exerciseDoneToday();
+        document.getElementById('exerciseBtn').classList.toggle('active', done);
+        document.getElementById('exerciseLabel').textContent = done ? 'Exercise Done' : 'Exercise';
+        document.getElementById('exerciseIcon').textContent  = done ? '✓' : '○';
+
+        const open = windowOpenToday();
+        document.getElementById('windowBtn').classList.toggle('active', open);
+        document.getElementById('windowLabel').textContent = open ? 'Window Open' : 'Window Closed';
+        document.getElementById('windowIcon').textContent  = open ? '◎' : '⊘';
+
+        applyTheme();
+    }
+
+    // ── Clock ─────────────────────────────────────────────────
+    function updateClock() {
+        const now    = new Date();
+        const hh     = String(now.getHours()).padStart(2, '0');
+        const mm     = String(now.getMinutes()).padStart(2, '0');
+        const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        document.getElementById('clock').textContent    = `${hh}:${mm}`;
+        document.getElementById('dateLine').textContent = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+    }
+
+    // ── Modals ────────────────────────────────────────────────
+    function openModal(id)  { document.getElementById(id + 'Modal').classList.add('active'); }
+    function closeModal(id) { document.getElementById(id + 'Modal').classList.remove('active'); }
+
+    document.querySelectorAll('.modal-overlay').forEach(o => {
+        o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.active').forEach(o => o.classList.remove('active'));
+        }
+    });
+
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+    // ── Init ──────────────────────────────────────────────────
+    async function init() {
+        updateClock();
+        setInterval(updateClock, 10000);
+
+        S = await fetchState();   // fetch from Supabase; falls back to DEFAULTS on error
+        render();
+        document.body.classList.remove('loading');  // reveal numbers
+    }
+
+    // ── Expose to window for inline onclick handlers ─────────
+    window.toggleExercise = toggleExercise;
+    window.toggleWindow   = toggleWindow;
+    window.addAvoided     = addAvoided;
+    window.openModal      = openModal;
+    window.closeModal     = closeModal;
+    window.resetAll       = resetAll;
+
+    init();
+</script>
+</body>
+</html>
