@@ -832,6 +832,139 @@
             display: inline-block;
             transition: transform 0.12s ease;
         }
+
+        /* ── Chat Modal ─────────────────────────────────────── */
+        .chat-modal {
+            display: flex;
+            flex-direction: column;
+            max-height: 88vh;
+            padding-bottom: 0;
+        }
+
+        .chat-modal .modal-header {
+            flex-shrink: 0;
+            margin-bottom: 0;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.1rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 0;
+        }
+
+        .chat-msg {
+            max-width: 85%;
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            line-height: 1.55;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .chat-msg.user {
+            align-self: flex-end;
+            background: var(--green);
+            color: #fff;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chat-msg.assistant {
+            align-self: flex-start;
+            background: var(--surface);
+            color: var(--text);
+            border-bottom-left-radius: 3px;
+        }
+
+        .chat-typing {
+            align-self: flex-start;
+            background: var(--surface);
+            border-radius: 10px;
+            border-bottom-left-radius: 3px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .chat-typing span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--muted);
+            animation: chat-dot 1.2s ease-in-out infinite;
+        }
+
+        .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes chat-dot {
+            0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+            30%            { opacity: 1;   transform: translateY(-3px); }
+        }
+
+        .chat-input-area {
+            flex-shrink: 0;
+            display: flex;
+            gap: 0.55rem;
+            align-items: flex-end;
+            padding: 1rem 0 1.25rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            padding: 0.6rem 0.75rem;
+            resize: none;
+            max-height: 120px;
+            overflow-y: auto;
+            transition: border-color 0.15s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--green);
+        }
+
+        .chat-input::placeholder { color: var(--muted); }
+
+        .chat-send {
+            background: var(--green);
+            border: none;
+            border-radius: 7px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.15rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: opacity 0.15s ease;
+            line-height: 1;
+        }
+
+        .chat-send:hover  { opacity: 0.85; }
+        .chat-send:disabled { opacity: 0.35; cursor: default; }
+
+        @media (max-width: 720px) {
+            .chat-modal { max-height: 92vh; }
+            .chat-input-area { padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem)); }
+        }
     </style>
 </head>
 <body class="loading">
@@ -923,15 +1056,17 @@
 <button class="reset-btn" onclick="resetAll()">Reset</button>
 <div class="live-dot" id="liveDot"><span id="syncLabel">Live</span> <span class="version" id="versionTag"></span></div>
 
-<!-- HELP MODAL -->
+<!-- HELP MODAL — ephemeral Claude chat, resets each open -->
 <div class="modal-overlay" id="helpModal">
-    <div class="modal">
+    <div class="modal chat-modal">
         <div class="modal-header">
             <span class="modal-title">Need Help Right Now</span>
-            <button class="modal-close" onclick="closeModal('help')">✕</button>
+            <button class="modal-close" id="chatClose">✕</button>
         </div>
-        <div class="mc" id="helpContent">
-            <p>Placeholder — content coming soon.</p>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <textarea class="chat-input" id="chatInput" placeholder="What's going on?" rows="1"></textarea>
+            <button class="chat-send" id="chatSend" aria-label="Send">↑</button>
         </div>
     </div>
 </div>
@@ -1135,6 +1270,7 @@
 
     // Claude insight endpoint (Supabase Edge Function). APP_TOKEN gates the proxy.
     const FEEDBACK_URL = `${SUPABASE_URL}/functions/v1/feedback`;
+    const CHAT_URL     = `${SUPABASE_URL}/functions/v1/chat`;
     const APP_TOKEN    = 'nt_4f8a2c9e7b1d6035';
 
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1200,6 +1336,10 @@
 
     let syncTimer = null;
     let retryFn   = null;
+
+    // ── Chat state (ephemeral — resets each time modal opens) ─
+    let chatHistory   = [];
+    let chatIsTyping  = false;
 
     function setSyncState(state) {
         const dot   = document.getElementById('liveDot');
@@ -1652,8 +1792,12 @@
         document.getElementById(id + 'Modal').classList.add('active');
         if (id === 'history')  loadHistory();
         if (id === 'insights') loadInsight();
+        if (id === 'help')     resetChat();
     }
-    function closeModal(id) { document.getElementById(id + 'Modal').classList.remove('active'); }
+    function closeModal(id) {
+        document.getElementById(id + 'Modal').classList.remove('active');
+        if (id === 'help') resetChat();
+    }
 
     // ── History ───────────────────────────────────────────────
     async function fetchHistory(days = 30) {
@@ -1859,13 +2003,139 @@
         }
     }
 
+    // ── Crisis Chat ───────────────────────────────────────────
+
+    function buildChatSystemPrompt() {
+        const gs = S.goodStuff.values;
+        const goodDone = HABITS
+            .filter(h => h.type === 'bool' && gs[h.key] === true)
+            .map(h => h.label);
+        const goodList = goodDone.length ? goodDone.join(', ') : 'none ticked yet';
+        const mood  = gs.mood       != null ? `${gs.mood}/5`     : 'not logged';
+        const sleep = gs.sleep_hours != null ? `${gs.sleep_hours}h` : 'not logged';
+        const water = gs.water       != null ? `${gs.water}L`    : 'not logged';
+        return `You are a calm, direct support voice for someone who is struggling with a compulsive porn use problem right now.
+
+Their current dashboard data:
+- Sessions avoided (cumulative): ${S.sessionsAvoided}
+- Days active: ${daysActive()}
+- Exercise done today: ${exerciseDoneToday() ? 'yes' : 'no'}
+- Window currently open: ${windowOpenToday() ? 'yes' : 'no'}
+- Mood today: ${mood}
+- Hours slept: ${sleep}
+- Water intake: ${water}
+- Good stuff completed today: ${goodList}
+
+They have a system in place: DNS blocking, scheduled windows, exercise as a prerequisite. They've quit smoking 40 a day and alcohol. The capacity to do this is proven.
+
+Your job is to get them through the next 20 minutes without a session starting. Be direct and honest, not therapeutic or preachy. No cotton wool. Treat them like an intelligent adult who already knows what they should do and just needs grounding right now. Short responses. Ask what's going on if they don't say.`;
+    }
+
+    function renderChatMessages() {
+        const container = document.getElementById('chatMessages');
+        if (!container) return;
+        container.innerHTML = '';
+        for (const msg of chatHistory) {
+            const div = document.createElement('div');
+            div.className = `chat-msg ${msg.role}`;
+            div.textContent = msg.content;
+            container.appendChild(div);
+        }
+        if (chatIsTyping) {
+            const typing = document.createElement('div');
+            typing.className = 'chat-typing';
+            typing.innerHTML = '<span></span><span></span><span></span>';
+            container.appendChild(typing);
+        }
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function resetChat() {
+        chatHistory  = [];
+        chatIsTyping = false;
+        renderChatMessages();
+        const input = document.getElementById('chatInput');
+        if (input) { input.value = ''; input.style.height = 'auto'; }
+        const send = document.getElementById('chatSend');
+        if (send) send.disabled = false;
+    }
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const send  = document.getElementById('chatSend');
+        const text  = input ? input.value.trim() : '';
+        if (!text || chatIsTyping) return;
+
+        input.value = '';
+        input.style.height = 'auto';
+
+        chatHistory.push({ role: 'user', content: text });
+        chatIsTyping = true;
+        if (send) send.disabled = true;
+        renderChatMessages();
+
+        try {
+            const res = await fetch(CHAT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'apikey': SUPABASE_ANON_KEY,
+                    'x-app-token': APP_TOKEN,
+                },
+                body: JSON.stringify({
+                    system: buildChatSystemPrompt(),
+                    messages: chatHistory,
+                }),
+            });
+            if (!res.ok) throw new Error(res.status);
+            const data = await res.json();
+            const reply = (data.reply || '').trim() || 'No response — try again.';
+            chatHistory.push({ role: 'assistant', content: reply });
+        } catch {
+            chatHistory.push({ role: 'assistant', content: 'Something went wrong. Check your connection and try again.' });
+        } finally {
+            chatIsTyping = false;
+            if (send) send.disabled = false;
+            renderChatMessages();
+            if (input) input.focus();
+        }
+    }
+
+    // Wire up chat UI
+    const chatSendBtn  = document.getElementById('chatSend');
+    const chatInputEl  = document.getElementById('chatInput');
+    const chatCloseBtn = document.getElementById('chatClose');
+
+    if (chatSendBtn) chatSendBtn.addEventListener('click', sendChatMessage);
+
+    if (chatInputEl) {
+        chatInputEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
+        });
+        chatInputEl.addEventListener('input', () => {
+            chatInputEl.style.height = 'auto';
+            chatInputEl.style.height = Math.min(chatInputEl.scrollHeight, 120) + 'px';
+        });
+        chatInputEl.addEventListener('focus', () => {
+            setTimeout(() => chatInputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300);
+        });
+    }
+
+    if (chatCloseBtn) chatCloseBtn.addEventListener('click', () => closeModal('help'));
+
+    // Modal overlay click and Escape key — route through closeModal so chat resets cleanly
     document.querySelectorAll('.modal-overlay').forEach(o => {
-        o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
+        o.addEventListener('click', e => {
+            if (e.target === o) closeModal(o.id.replace('Modal', ''));
+        });
     });
 
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.modal-overlay.active').forEach(o => o.classList.remove('active'));
+            document.querySelectorAll('.modal-overlay.active').forEach(o => {
+                closeModal(o.id.replace('Modal', ''));
+            });
         }
     });
 
@@ -1897,12 +2167,13 @@
     }
 
     // ── Expose to window for inline onclick handlers ──────────
-    window.toggleExercise = toggleExercise;
-    window.addAvoided     = addAvoided;
-    window.openModal      = openModal;
-    window.closeModal     = closeModal;
-    window.resetAll       = resetAll;
-    window.refreshInsight = refreshInsight;
+    window.toggleExercise   = toggleExercise;
+    window.addAvoided       = addAvoided;
+    window.openModal        = openModal;
+    window.closeModal       = closeModal;
+    window.resetAll         = resetAll;
+    window.refreshInsight   = refreshInsight;
+    window.sendChatMessage  = sendChatMessage;
 
     // ── Boot: check auth cookie ───────────────────────────────
     if (getCookie(COOKIE_NAME) === '1') {
