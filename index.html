@@ -808,6 +808,18 @@
             letter-spacing: 0.1em;
         }
 
+        @keyframes sync-blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.2; }
+        }
+        .live-dot[data-sync="syncing"]::before {
+            background: #B87820;
+            animation: sync-blink 0.8s ease-in-out infinite;
+        }
+        .live-dot[data-sync="syncing"] { color: #B87820; }
+        .live-dot[data-sync="error"]::before { background: #C84444; }
+        .live-dot[data-sync="error"] { color: #C84444; cursor: pointer; }
+
         /* Read-only status pill (auto-managed window) */
         .status-btn.readonly { cursor: default; }
         .status-btn.readonly:hover { border-color: var(--border); color: var(--muted); }
@@ -909,7 +921,7 @@
 </div>
 
 <button class="reset-btn" onclick="resetAll()">Reset</button>
-<div class="live-dot">Live <span class="version" id="versionTag"></span></div>
+<div class="live-dot" id="liveDot"><span id="syncLabel">Live</span> <span class="version" id="versionTag"></span></div>
 
 <!-- HELP MODAL -->
 <div class="modal-overlay" id="helpModal">
@@ -1186,6 +1198,28 @@
 
     let S = freshDefaults();
 
+    let syncTimer = null;
+    let retryFn   = null;
+
+    function setSyncState(state) {
+        const dot   = document.getElementById('liveDot');
+        const label = document.getElementById('syncLabel');
+        if (!dot || !label) return;
+        clearTimeout(syncTimer);
+        dot.onclick = null;
+        if (state === 'syncing') {
+            dot.dataset.sync  = 'syncing';
+            label.textContent = 'Syncing';
+        } else if (state === 'error') {
+            dot.dataset.sync  = 'error';
+            label.textContent = 'Sync failed — tap to retry';
+            if (retryFn) dot.onclick = retryFn;
+        } else {
+            dot.removeAttribute('data-sync');
+            label.textContent = 'Live';
+        }
+    }
+
     // ── Supabase read ─────────────────────────────────────────
     async function fetchState() {
         try {
@@ -1195,7 +1229,7 @@
                 .eq('user_id', USER_ID)
                 .maybeSingle();
 
-            if (error || !data) return freshDefaults();
+            if (error || !data) return { state: freshDefaults(), ok: false };
 
             let goodStuff     = normalizeGoodStuff(data.good_stuff);
             let sessionsToday = 0;
@@ -1217,27 +1251,32 @@
             } catch(e) { /* fall back to tab_state good_stuff */ }
 
             return {
-                theme:           data.theme           || 'light',
-                sessionsAvoided: data.sessions_avoided ?? 0,
-                startDate:       data.start_date      || todayStr(),
-                exerciseDate:    data.exercise_date   || null,
-                windowDate:      data.window_date     || null,
-                goodStuff:       goodStuff,
-                sessionsToday:   sessionsToday,
-                lastInsight:     data.last_insight    || null,
-                lastInsightAt:   data.last_insight_at || null,
+                state: {
+                    theme:           data.theme           || 'light',
+                    sessionsAvoided: data.sessions_avoided ?? 0,
+                    startDate:       data.start_date      || todayStr(),
+                    exerciseDate:    data.exercise_date   || null,
+                    windowDate:      data.window_date     || null,
+                    goodStuff:       goodStuff,
+                    sessionsToday:   sessionsToday,
+                    lastInsight:     data.last_insight    || null,
+                    lastInsightAt:   data.last_insight_at || null,
+                },
+                ok: true,
             };
         } catch(e) {
-            return freshDefaults();
+            return { state: freshDefaults(), ok: false };
         }
     }
 
     // ── Supabase write ────────────────────────────────────────
     async function save() {
+        setSyncState('syncing');
         const now   = new Date().toISOString();
         const today = todayStr();
+        let ok = true;
         try {
-            await db.from('tab_state').upsert(
+            const { error } = await db.from('tab_state').upsert(
                 {
                     user_id:          USER_ID,
                     sessions_avoided: S.sessionsAvoided,
@@ -1252,10 +1291,11 @@
                 },
                 { onConflict: 'user_id' }
             );
-        } catch(e) {}
+            if (error) ok = false;
+        } catch(e) { ok = false; }
         // Persist today's history row so trends accumulate (no rollover logic needed).
         try {
-            await db.from('daily_log').upsert(
+            const { error } = await db.from('daily_log').upsert(
                 {
                     user_id:        USER_ID,
                     log_date:       today,
@@ -1267,7 +1307,14 @@
                 },
                 { onConflict: 'user_id,log_date' }
             );
-        } catch(e) {}
+            if (error) ok = false;
+        } catch(e) { ok = false; }
+        if (ok) {
+            setSyncState('idle');
+        } else {
+            retryFn = () => save();
+            setSyncState('error');
+        }
     }
 
     // ── Sun times (compact SunCalc) for auto dark mode ────────
@@ -1830,9 +1877,23 @@
         updateClock();
         setInterval(updateClock, 10000);
         buildHabitList();
-        S = await fetchState();
+        setSyncState('syncing');
+        const { state, ok } = await fetchState();
+        S = state;
         render();
         document.body.classList.remove('loading');
+        if (ok) {
+            setSyncState('idle');
+        } else {
+            retryFn = async () => {
+                setSyncState('syncing');
+                const r = await fetchState();
+                S = r.state;
+                if (r.ok) { render(); setSyncState('idle'); }
+                else setSyncState('error');
+            };
+            setSyncState('error');
+        }
     }
 
     // ── Expose to window for inline onclick handlers ──────────
