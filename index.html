@@ -17,6 +17,7 @@
             --green: #2A6049;
             --green-bg: #EBF5F0;
             --green-muted: #3D7A5E;
+            --checked-label: #7A9A2A;
         }
 
         [data-theme="dark"] {
@@ -28,6 +29,7 @@
             --green: #4A9070;
             --green-bg: #152219;
             --green-muted: #5AAF85;
+            --checked-label: #A8C44E;
         }
 
         body {
@@ -55,7 +57,7 @@
         .columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2.5rem;
+            gap: 5rem;
             align-items: start;
         }
 
@@ -168,13 +170,14 @@
 
         /* ── Clock ─────────────────────────────────────────── */
         .clock {
-            font-size: 5rem;
+            font-size: 8rem;
             font-weight: 200;
             letter-spacing: -0.04em;
             line-height: 1;
             color: var(--text);
             margin-bottom: 0.3rem;
             font-variant-numeric: tabular-nums;
+            text-align: center;
         }
 
         .date-line {
@@ -183,7 +186,8 @@
             text-transform: uppercase;
             letter-spacing: 0.12em;
             color: var(--muted);
-            margin-bottom: 2.5rem;
+            margin-bottom: 4rem;
+            text-align: center;
         }
 
         hr {
@@ -318,8 +322,8 @@
         }
 
         .good-item.checked .good-check {
-            background: var(--green);
-            border-color: var(--green);
+            background: #99C64C;
+            border-color: #99C64C;
             color: white;
         }
 
@@ -332,7 +336,7 @@
         }
 
         .good-item.checked .good-item-label {
-            color: var(--green-muted);
+            color: var(--checked-label);
         }
 
         .good-item:not(.checked):hover .good-check {
@@ -348,7 +352,7 @@
 
         .good-item.numeric .good-item-label { flex: 1; }
 
-        .good-item.numeric.has-value .good-item-label { color: var(--green-muted); }
+        .good-item.numeric.has-value .good-item-label { color: var(--checked-label); }
 
         .stepper {
             display: flex;
@@ -386,7 +390,7 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .good-item.numeric.has-value .stepper-value { color: var(--green-muted); }
+        .good-item.numeric.has-value .stepper-value { color: var(--checked-label); }
 
         /* ── Slider habit rows ─────────────────────────────── */
         .good-item.slider {
@@ -439,31 +443,35 @@
             width: 100%;
             height: 4px;
             border-radius: 2px;
-            background: var(--border);
+            background: linear-gradient(
+                to right,
+                var(--accent, var(--border)) var(--fill, 0%),
+                var(--border) var(--fill, 0%)
+            );
             outline: none;
             cursor: pointer;
-            accent-color: var(--accent, var(--green));
         }
 
         input[type="range"].habit-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: var(--accent, var(--green));
-            border: 2px solid var(--bg);
-            box-shadow: 0 0 0 1px var(--border);
+            background: var(--bg);
+            border: 2.5px solid var(--accent, var(--muted));
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
             cursor: pointer;
-            transition: background 0.15s;
+            transition: border-color 0.15s;
         }
 
         input[type="range"].habit-slider::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
+            width: 15px;
+            height: 15px;
             border-radius: 50%;
-            background: var(--accent, var(--green));
-            border: 2px solid var(--bg);
+            background: var(--bg);
+            border: 2px solid var(--accent, var(--muted));
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
             cursor: pointer;
         }
 
@@ -580,11 +588,37 @@
         .insight-refresh:hover:not(:disabled) { border-color: var(--text); color: var(--text); }
         .insight-refresh:disabled { opacity: 0.5; cursor: default; }
 
+        /* ── Insights section (full-width, below columns) ─── */
+        .insights-section {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .insights-section .add-btn {
+            max-width: 320px;
+            margin-top: 0;
+        }
+
         /* ── Modal triggers ────────────────────────────────── */
         .modal-row {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 0.55rem;
+        }
+
+        .modal-row.single {
+            grid-template-columns: 1fr;
+            max-width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .modal-row-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.55rem;
+            margin-top: 1rem;
         }
 
         .modal-btn {
@@ -856,15 +890,20 @@
 
             <hr>
 
-            <button class="add-btn" onclick="openModal('insights')" style="margin-top:0;">✦ Insights from Claude</button>
+            <div class="modal-row-col">
+                <button class="modal-btn" onclick="openModal('facts')">The Facts ↗</button>
+                <button class="modal-btn" onclick="openModal('system')">The System ↗</button>
+            </div>
         </div>
 
     </div>
 
-    <div class="modal-row" style="margin-top:1.75rem;">
+    <div class="insights-section">
+        <button class="add-btn" onclick="openModal('insights')">✦ Insights from Claude</button>
+    </div>
+
+    <div class="modal-row single" style="margin-top:1rem;">
         <button class="modal-btn" onclick="openModal('history')">History ↗</button>
-        <button class="modal-btn" onclick="openModal('facts')">The Facts ↗</button>
-        <button class="modal-btn" onclick="openModal('system')">The System ↗</button>
     </div>
 
 </div>
@@ -1368,7 +1407,11 @@
             if (color) cell.style.color = color;
         }
         const slider = document.getElementById('sl-' + h.key);
-        if (slider && color) slider.style.setProperty('--accent', color);
+        if (slider) {
+            if (color) slider.style.setProperty('--accent', color);
+            const pct = ((v - h.min) / ((h.max - h.min) || 1) * 100).toFixed(1) + '%';
+            slider.style.setProperty('--fill', pct);
+        }
     }
 
     async function toggleTheme() {
@@ -1429,7 +1472,10 @@
                 slider.className = 'habit-slider';
                 slider.id = 'sl-' + h.key;
                 slider.min = h.min; slider.max = h.max; slider.step = h.step;
-                slider.value = h.default ?? h.min;
+                const initV = h.default ?? h.min;
+                slider.value = initV;
+                const initPct = ((initV - h.min) / ((h.max - h.min) || 1) * 100).toFixed(1) + '%';
+                slider.style.setProperty('--fill', initPct);
                 wrap.append(slider);
 
                 // Ideal marker for 'target' habits (e.g. water ~75%).
@@ -1510,7 +1556,11 @@
                 } else {
                     const cell = document.getElementById('gs-' + h.key);
                     if (cell) cell.innerHTML = `${fmtHabitValue(h, v)}${h.unit ? `<span class="unit">${h.unit}</span>` : ''}`;
-                    if (slider) slider.style.removeProperty('--accent');
+                    if (slider) {
+                        slider.style.removeProperty('--accent');
+                        const pct = ((v - h.min) / ((h.max - h.min) || 1) * 100).toFixed(1) + '%';
+                        slider.style.setProperty('--fill', pct);
+                    }
                 }
             } else {
                 // scale / stepper
