@@ -49,13 +49,89 @@
             max-width: 400px;
         }
 
-        /* Loading state — numbers invisible until Supabase responds, preserving layout */
         body.loading #sessionsNum,
         body.loading #daysNum {
             visibility: hidden;
         }
 
-        /* Theme toggle */
+        /* ── Auth overlay ──────────────────────────────────── */
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            transition: background 0.2s;
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .auth-title {
+            font-size: 3rem;
+            font-weight: 200;
+            letter-spacing: -0.04em;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 2rem;
+            line-height: 1;
+        }
+
+        .auth-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .auth-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--surface);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .auth-input:focus { border-color: var(--muted); }
+
+        .auth-submit {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--surface);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            line-height: 1;
+        }
+
+        .auth-submit:hover { border-color: var(--muted); color: var(--text); }
+
+        .auth-error {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .auth-error.visible { opacity: 1; }
+
+        /* ── Theme toggle ──────────────────────────────────── */
         .theme-toggle {
             position: fixed;
             top: 1.5rem;
@@ -75,7 +151,7 @@
         }
         .theme-toggle:hover { border-color: var(--muted); color: var(--text); }
 
-        /* Clock */
+        /* ── Clock ─────────────────────────────────────────── */
         .clock {
             font-size: 5rem;
             font-weight: 200;
@@ -95,19 +171,17 @@
             margin-bottom: 2.5rem;
         }
 
-        /* Divider */
         hr {
             border: none;
             border-top: 1px solid var(--border);
             margin: 1.5rem 0;
         }
 
-        /* Stats */
+        /* ── Stats ─────────────────────────────────────────── */
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0;
-            margin-bottom: 0;
         }
 
         .stat { padding: 0.25rem 0; }
@@ -138,7 +212,17 @@
             margin-top: 0.45rem;
         }
 
-        /* Buttons */
+        /* ── Section labels ────────────────────────────────── */
+        .section-label {
+            font-size: 0.58rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            margin-bottom: 0.65rem;
+        }
+
+        /* ── Prerequisites buttons ─────────────────────────── */
         .status-row { display: flex; flex-direction: column; gap: 0.55rem; }
 
         .status-btn {
@@ -189,7 +273,62 @@
 
         .add-btn:hover { border-color: var(--text); color: var(--text); border-style: solid; }
 
-        /* Modal triggers */
+        /* ── Good stuff checklist ──────────────────────────── */
+        .good-stuff-list { display: flex; flex-direction: column; }
+
+        .good-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.6rem 0;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            user-select: none;
+        }
+
+        .good-item:last-child { border-bottom: none; }
+
+        .good-check {
+            width: 1.1rem;
+            height: 1.1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.55rem;
+            color: transparent;
+            transition: all 0.15s ease;
+        }
+
+        .good-item.checked .good-check {
+            background: var(--green);
+            border-color: var(--green);
+            color: white;
+        }
+
+        .good-item-label {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--muted);
+            transition: color 0.15s;
+            line-height: 1.4;
+        }
+
+        .good-item.checked .good-item-label {
+            color: var(--green-muted);
+        }
+
+        .good-item:not(.checked):hover .good-check {
+            border-color: var(--muted);
+        }
+
+        .good-item:not(.checked):hover .good-item-label {
+            color: var(--text);
+        }
+
+        /* ── Modal triggers ────────────────────────────────── */
         .modal-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -213,7 +352,7 @@
 
         .modal-btn:hover { border-color: var(--text); color: var(--text); }
 
-        /* Modal */
+        /* ── Modal ─────────────────────────────────────────── */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -267,7 +406,6 @@
 
         .modal-close:hover { color: var(--text); }
 
-        /* Modal content */
         .mc h2 {
             font-size: 0.95rem;
             font-weight: 600;
@@ -337,7 +475,7 @@
             margin: 1.25rem 0;
         }
 
-        /* Reset */
+        /* ── Footer buttons ────────────────────────────────── */
         .reset-btn {
             position: fixed;
             bottom: 1.25rem;
@@ -386,6 +524,24 @@
 </head>
 <body class="loading">
 
+<!-- AUTH OVERLAY — visible by default; hidden by JS if cookie present -->
+<div class="auth-overlay" id="authOverlay">
+    <div class="auth-box">
+        <div class="auth-title">—</div>
+        <div class="auth-row">
+            <input
+                class="auth-input"
+                type="password"
+                id="pwInput"
+                placeholder="Password"
+                autocomplete="current-password"
+            >
+            <button class="auth-submit" id="pwSubmit">→</button>
+        </div>
+        <div class="auth-error" id="pwError">Incorrect</div>
+    </div>
+</div>
+
 <button class="theme-toggle" id="themeToggle">☾</button>
 
 <div class="page">
@@ -406,6 +562,7 @@
 
     <hr>
 
+    <div class="section-label">Prerequisites</div>
     <div class="status-row">
         <button class="status-btn" id="exerciseBtn" onclick="toggleExercise()">
             <span id="exerciseLabel">Exercise</span>
@@ -418,6 +575,40 @@
     </div>
 
     <button class="add-btn" onclick="addAvoided()">+ Mark Session Avoided</button>
+
+    <hr>
+
+    <div class="section-label">Good stuff</div>
+    <div class="good-stuff-list">
+        <div class="good-item" data-key="sunlight" onclick="toggleGoodItem('sunlight')">
+            <div class="good-check" id="gs-sunlight">✓</div>
+            <span class="good-item-label">Sunlight / time outside</span>
+        </div>
+        <div class="good-item" data-key="hydration" onclick="toggleGoodItem('hydration')">
+            <div class="good-check" id="gs-hydration">✓</div>
+            <span class="good-item-label">Hydration</span>
+        </div>
+        <div class="good-item" data-key="ate" onclick="toggleGoodItem('ate')">
+            <div class="good-check" id="gs-ate">✓</div>
+            <span class="good-item-label">Ate something decent</span>
+        </div>
+        <div class="good-item" data-key="social" onclick="toggleGoodItem('social')">
+            <div class="good-check" id="gs-social">✓</div>
+            <span class="good-item-label">Spoke to someone</span>
+        </div>
+        <div class="good-item" data-key="creative" onclick="toggleGoodItem('creative')">
+            <div class="good-check" id="gs-creative">✓</div>
+            <span class="good-item-label">Did something creative or productive</span>
+        </div>
+        <div class="good-item" data-key="no_doom" onclick="toggleGoodItem('no_doom')">
+            <div class="good-check" id="gs-no_doom">✓</div>
+            <span class="good-item-label">No doom scrolling before bed</span>
+        </div>
+        <div class="good-item" data-key="sleep_ok" onclick="toggleGoodItem('sleep_ok')">
+            <div class="good-check" id="gs-sleep_ok">✓</div>
+            <span class="good-item-label">Reasonable sleep time</span>
+        </div>
+    </div>
 
     <hr>
 
@@ -449,7 +640,7 @@
             <h2>What's Actually Happening in Your Brain</h2>
             <p><strong>Dopamine system is broken — measurably.</strong> Same mesolimbic pathway as substance addiction. Brain downregulates receptors in response to supernormal stimulation. Lower sensitivity. Higher threshold required for the same response. Ordinary pleasures register flat. Content has to escalate to compensate.</p>
             <p>The wanting/liking dissociation: you want it without liking it. That's not a personality flaw. That's a broken reward circuit operating exactly as expected.</p>
-            <p><strong>Grey matter is reduced — measurably.</strong> Kühn & Gallinat (2014) neuroimaging found a significant negative correlation between grey matter volume in the reward centre and hours consumed. Heavy use also reduces connectivity between the reward system and the prefrontal cortex — the region responsible for impulse control. The one that goes offline mid-session.</p>
+            <p><strong>Grey matter is reduced — measurably.</strong> Kühn &amp; Gallinat (2014) neuroimaging found a significant negative correlation between grey matter volume in the reward centre and hours consumed. Heavy use also reduces connectivity between the reward system and the prefrontal cortex — the region responsible for impulse control. The one that goes offline mid-session.</p>
             <p><strong>Attention and working memory are impaired.</strong> The task avoidance isn't purely psychological. The hardware is compromised.</p>
 
             <hr class="mhr">
@@ -548,35 +739,69 @@
     const SUPABASE_URL      = 'https://fybgariixiwgsjhjapwr.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5YmdhcmlpeGl3Z3NqaGphcHdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzM4NzIsImV4cCI6MjA5NjY0OTg3Mn0.0mpI5iZIrSL1-wlSS6VFDsVxJhrJ4CzOkOOW2wz7vhM';
     const USER_ID           = 'mike';
+    const PASSWORD          = 'Christopher1';
+    const COOKIE_NAME       = 'nt_auth';
+    const GOOD_KEYS         = ['sunlight','hydration','ate','social','creative','no_doom','sleep_ok'];
 
-    // ── Client ────────────────────────────────────────────────
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ── Auth ──────────────────────────────────────────────────
+    function getCookie(name) {
+        return document.cookie.split('; ').find(r => r.startsWith(name + '='))?.split('=')[1];
+    }
+
+    function setAuthCookie() {
+        const d = new Date();
+        d.setDate(d.getDate() + 30);
+        document.cookie = `${COOKIE_NAME}=1; expires=${d.toUTCString()}; path=/; SameSite=Strict`;
+    }
+
+    function submitPassword() {
+        if (document.getElementById('pwInput').value === PASSWORD) {
+            setAuthCookie();
+            document.getElementById('authOverlay').style.display = 'none';
+            init();
+        } else {
+            const err = document.getElementById('pwError');
+            err.classList.add('visible');
+            document.getElementById('pwInput').value = '';
+            document.getElementById('pwInput').focus();
+            setTimeout(() => err.classList.remove('visible'), 2000);
+        }
+    }
 
     // ── Helpers ───────────────────────────────────────────────
     function todayStr() {
         return new Date().toISOString().split('T')[0];
     }
 
-    const DEFAULTS = {
-        theme:           'light',
-        sessionsAvoided: 0,
-        startDate:       todayStr(),
-        exerciseDate:    null,
-        windowDate:      null,
-    };
+    function freshDefaults() {
+        return {
+            theme:           'light',
+            sessionsAvoided: 0,
+            startDate:       todayStr(),
+            exerciseDate:    null,
+            windowDate:      null,
+            goodStuff:       { date: todayStr(), items: [] },
+        };
+    }
 
-    let S = { ...DEFAULTS };
+    let S = freshDefaults();
 
     // ── Supabase read ─────────────────────────────────────────
     async function fetchState() {
         try {
             const { data, error } = await db
                 .from('tab_state')
-                .select('sessions_avoided, start_date, exercise_date, window_date, theme')
+                .select('sessions_avoided, start_date, exercise_date, window_date, theme, good_stuff')
                 .eq('user_id', USER_ID)
                 .maybeSingle();
 
-            if (error || !data) return { ...DEFAULTS };
+            if (error || !data) return freshDefaults();
+
+            const gs = (data.good_stuff && data.good_stuff.date === todayStr())
+                ? data.good_stuff
+                : { date: todayStr(), items: [] };
 
             return {
                 theme:           data.theme           || 'light',
@@ -584,9 +809,10 @@
                 startDate:       data.start_date      || todayStr(),
                 exerciseDate:    data.exercise_date   || null,
                 windowDate:      data.window_date     || null,
+                goodStuff:       gs,
             };
         } catch(e) {
-            return { ...DEFAULTS };
+            return freshDefaults();
         }
     }
 
@@ -601,23 +827,21 @@
                     exercise_date:    S.exerciseDate,
                     window_date:      S.windowDate,
                     theme:            S.theme,
+                    good_stuff:       S.goodStuff,
                     updated_at:       new Date().toISOString(),
                 },
                 { onConflict: 'user_id' }
             );
-        } catch(e) {
-            // Silent fail — state lives in memory, will sync on next interaction
-        }
+        } catch(e) {}
     }
 
     // ── State helpers ─────────────────────────────────────────
     function exerciseDoneToday() { return S.exerciseDate === todayStr(); }
     function windowOpenToday()   { return S.windowDate   === todayStr(); }
+    function isChecked(key)      { return S.goodStuff.items.includes(key); }
 
     function daysActive() {
-        const start = new Date(S.startDate);
-        const now   = new Date();
-        const diff  = Math.floor((now - start) / 86400000);
+        const diff = Math.floor((new Date() - new Date(S.startDate)) / 86400000);
         return Math.max(0, diff) + 1;
     }
 
@@ -640,6 +864,23 @@
         render(); await save();
     }
 
+    async function toggleGoodItem(key) {
+        const items = S.goodStuff.items;
+        const idx = items.indexOf(key);
+        if (idx === -1) {
+            items.push(key);
+            const circle = document.getElementById('gs-' + key);
+            if (circle) {
+                circle.style.transform = 'scale(1.4)';
+                setTimeout(() => { circle.style.transform = 'scale(1)'; }, 160);
+            }
+        } else {
+            items.splice(idx, 1);
+        }
+        S.goodStuff.date = todayStr();
+        render(); await save();
+    }
+
     async function toggleTheme() {
         S.theme = S.theme === 'light' ? 'dark' : 'light';
         applyTheme(); await save();
@@ -647,7 +888,7 @@
 
     async function resetAll() {
         if (!confirm('Reset all tracking data?')) return;
-        S = { ...DEFAULTS, theme: S.theme };
+        S = { ...freshDefaults(), theme: S.theme };
         render(); await save();
     }
 
@@ -670,6 +911,11 @@
         document.getElementById('windowBtn').classList.toggle('active', open);
         document.getElementById('windowLabel').textContent = open ? 'Window Open' : 'Window Closed';
         document.getElementById('windowIcon').textContent  = open ? '◎' : '⊘';
+
+        for (const key of GOOD_KEYS) {
+            const row = document.querySelector(`.good-item[data-key="${key}"]`);
+            if (row) row.classList.toggle('checked', isChecked(key));
+        }
 
         applyTheme();
     }
@@ -705,21 +951,31 @@
     async function init() {
         updateClock();
         setInterval(updateClock, 10000);
-
-        S = await fetchState();   // fetch from Supabase; falls back to DEFAULTS on error
+        S = await fetchState();
         render();
-        document.body.classList.remove('loading');  // reveal numbers
+        document.body.classList.remove('loading');
     }
 
-    // ── Expose to window for inline onclick handlers ─────────
+    // ── Expose to window for inline onclick handlers ──────────
     window.toggleExercise = toggleExercise;
     window.toggleWindow   = toggleWindow;
     window.addAvoided     = addAvoided;
+    window.toggleGoodItem = toggleGoodItem;
     window.openModal      = openModal;
     window.closeModal     = closeModal;
     window.resetAll       = resetAll;
 
-    init();
+    // ── Boot: check auth cookie ───────────────────────────────
+    if (getCookie(COOKIE_NAME) === '1') {
+        document.getElementById('authOverlay').style.display = 'none';
+        init();
+    } else {
+        document.getElementById('pwSubmit').addEventListener('click', submitPassword);
+        document.getElementById('pwInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') submitPassword();
+        });
+        document.getElementById('pwInput').focus();
+    }
 </script>
 </body>
 </html>
