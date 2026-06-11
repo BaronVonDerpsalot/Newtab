@@ -328,10 +328,168 @@
             color: var(--text);
         }
 
+        /* ── Numeric habit rows (number / scale / count) ───── */
+        .good-item.numeric { cursor: default; }
+
+        .good-item.numeric .good-item-label { flex: 1; }
+
+        .good-item.numeric.has-value .good-item-label { color: var(--green-muted); }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            flex-shrink: 0;
+        }
+
+        .stepper-btn {
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            background: var(--surface);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.9rem;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .stepper-btn:hover { border-color: var(--muted); color: var(--text); }
+
+        .stepper-value {
+            min-width: 3.4rem;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .good-item.numeric.has-value .stepper-value { color: var(--green-muted); }
+
+        .stepper-value .unit {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin-left: 0.15rem;
+        }
+
+        /* ── History charts ────────────────────────────────── */
+        .hist-row {
+            padding: 0.7rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .hist-row:last-child { border-bottom: none; }
+
+        .hist-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.5rem;
+        }
+
+        .hist-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .hist-stat {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hist-strip {
+            display: flex;
+            gap: 3px;
+            align-items: flex-end;
+            height: 28px;
+        }
+
+        .hist-cell {
+            flex: 1;
+            border-radius: 2px;
+            background: var(--border);
+            min-height: 3px;
+            transition: background 0.15s;
+        }
+        .hist-cell.on { background: var(--green); }
+
+        .hist-bar {
+            flex: 1;
+            background: var(--green-muted);
+            border-radius: 2px 2px 0 0;
+            min-height: 2px;
+            opacity: 0.85;
+        }
+        .hist-bar.empty { background: var(--border); opacity: 1; }
+
+        .hist-empty {
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.6;
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+
+        /* ── Insights panel ────────────────────────────────── */
+        .insight-meta {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            margin-bottom: 1rem;
+        }
+
+        .insight-body {
+            font-size: 0.86rem;
+            line-height: 1.7;
+            color: var(--text);
+            white-space: pre-wrap;
+        }
+
+        .insight-body.muted { color: var(--muted); }
+
+        .insight-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .insight-refresh {
+            padding: 0.6rem 1.1rem;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--surface);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .insight-refresh:hover:not(:disabled) { border-color: var(--text); color: var(--text); }
+        .insight-refresh:disabled { opacity: 0.5; cursor: default; }
+
         /* ── Modal triggers ────────────────────────────────── */
         .modal-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 0.55rem;
         }
 
@@ -579,40 +737,14 @@
     <hr>
 
     <div class="section-label">Good stuff</div>
-    <div class="good-stuff-list">
-        <div class="good-item" data-key="sunlight" onclick="toggleGoodItem('sunlight')">
-            <div class="good-check" id="gs-sunlight">✓</div>
-            <span class="good-item-label">Sunlight / time outside</span>
-        </div>
-        <div class="good-item" data-key="hydration" onclick="toggleGoodItem('hydration')">
-            <div class="good-check" id="gs-hydration">✓</div>
-            <span class="good-item-label">Hydration</span>
-        </div>
-        <div class="good-item" data-key="ate" onclick="toggleGoodItem('ate')">
-            <div class="good-check" id="gs-ate">✓</div>
-            <span class="good-item-label">Ate something decent</span>
-        </div>
-        <div class="good-item" data-key="social" onclick="toggleGoodItem('social')">
-            <div class="good-check" id="gs-social">✓</div>
-            <span class="good-item-label">Spoke to someone</span>
-        </div>
-        <div class="good-item" data-key="creative" onclick="toggleGoodItem('creative')">
-            <div class="good-check" id="gs-creative">✓</div>
-            <span class="good-item-label">Did something creative or productive</span>
-        </div>
-        <div class="good-item" data-key="no_doom" onclick="toggleGoodItem('no_doom')">
-            <div class="good-check" id="gs-no_doom">✓</div>
-            <span class="good-item-label">No doom scrolling before bed</span>
-        </div>
-        <div class="good-item" data-key="sleep_ok" onclick="toggleGoodItem('sleep_ok')">
-            <div class="good-check" id="gs-sleep_ok">✓</div>
-            <span class="good-item-label">Reasonable sleep time</span>
-        </div>
-    </div>
+    <div class="good-stuff-list" id="goodStuffList"></div>
 
     <hr>
 
-    <div class="modal-row">
+    <button class="add-btn" onclick="openModal('insights')" style="margin-top:0;">✦ Insights from Claude</button>
+
+    <div class="modal-row" style="margin-top:0.55rem;">
+        <button class="modal-btn" onclick="openModal('history')">History ↗</button>
         <button class="modal-btn" onclick="openModal('facts')">The Facts ↗</button>
         <button class="modal-btn" onclick="openModal('system')">The System ↗</button>
     </div>
@@ -733,6 +865,34 @@
     </div>
 </div>
 
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">History — Last 30 Days</span>
+            <button class="modal-close" onclick="closeModal('history')">✕</button>
+        </div>
+        <div class="mc" id="historyContent"></div>
+    </div>
+</div>
+
+<!-- INSIGHTS MODAL -->
+<div class="modal-overlay" id="insightsModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Insights from Claude</span>
+            <button class="modal-close" onclick="closeModal('insights')">✕</button>
+        </div>
+        <div class="mc">
+            <div class="insight-meta" id="insightMeta">&nbsp;</div>
+            <div class="insight-body muted" id="insightBody">Loading your stats…</div>
+            <div class="insight-actions">
+                <button class="insight-refresh" id="insightRefresh" onclick="refreshInsight()">Refresh</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -741,7 +901,30 @@
     const USER_ID           = 'mike';
     const PASSWORD          = 'Christopher1';
     const COOKIE_NAME       = 'nt_auth';
-    const GOOD_KEYS         = ['sunlight','hydration','ate','social','creative','no_doom','sleep_ok'];
+
+    // Habits are data-driven — add/remove/reorder here and the UI follows.
+    // type: 'bool' (checkbox) | 'number' | 'scale' | 'count' (numeric stepper)
+    const HABITS = [
+        { key: 'sunlight',     label: 'Sunlight / time outside',             type: 'bool' },
+        { key: 'hydration',    label: 'Hydration',                           type: 'bool' },
+        { key: 'ate',          label: 'Ate something decent',                type: 'bool' },
+        { key: 'social',       label: 'Spoke to someone',                    type: 'bool' },
+        { key: 'creative',     label: 'Did something creative or productive', type: 'bool' },
+        { key: 'no_doom',      label: 'No doom scrolling before bed',        type: 'bool' },
+        { key: 'sleep_hours',  label: 'Hours slept',  type: 'number', unit: 'h',       min: 0, max: 14,  step: 0.5 },
+        { key: 'mood',         label: 'Mood',         type: 'scale',  unit: '/ 5',     min: 1, max: 5,   step: 1   },
+        { key: 'water',        label: 'Water',        type: 'count',  unit: 'glasses', min: 0, max: 20,  step: 1   },
+        { key: 'exercise_min', label: 'Exercise',     type: 'number', unit: 'min',     min: 0, max: 180, step: 5   },
+    ];
+    const HABIT_MAP = Object.fromEntries(HABITS.map(h => [h.key, h]));
+    const isNumeric = h => h.type !== 'bool';
+
+    // Old binary key (sleep_ok) → migrated away from; kept for back-compat conversion.
+    const LEGACY_BOOL_KEYS = ['sunlight','hydration','ate','social','creative','no_doom','sleep_ok'];
+
+    // Claude insight endpoint (Supabase Edge Function). APP_TOKEN gates the proxy.
+    const FEEDBACK_URL = `${SUPABASE_URL}/functions/v1/feedback`;
+    const APP_TOKEN    = 'nt_4f8a2c9e7b1d6035';
 
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -782,8 +965,24 @@
             startDate:       todayStr(),
             exerciseDate:    null,
             windowDate:      null,
-            goodStuff:       { date: todayStr(), items: [] },
+            goodStuff:       { date: todayStr(), values: {} },
+            sessionsToday:   0,
+            lastInsight:     null,
+            lastInsightAt:   null,
         };
+    }
+
+    // Convert any stored good_stuff shape into today's { date, values } object.
+    // Back-compat: the old shape was { date, items: [keys...] } (each present → true).
+    function normalizeGoodStuff(gs) {
+        if (!gs || gs.date !== todayStr()) return { date: todayStr(), values: {} };
+        if (gs.values && typeof gs.values === 'object') return { date: gs.date, values: gs.values };
+        if (Array.isArray(gs.items)) {
+            const values = {};
+            for (const k of gs.items) values[k] = true;
+            return { date: gs.date, values };
+        }
+        return { date: todayStr(), values: {} };
     }
 
     let S = freshDefaults();
@@ -793,15 +992,30 @@
         try {
             const { data, error } = await db
                 .from('tab_state')
-                .select('sessions_avoided, start_date, exercise_date, window_date, theme, good_stuff')
+                .select('sessions_avoided, start_date, exercise_date, window_date, theme, good_stuff, last_insight, last_insight_at')
                 .eq('user_id', USER_ID)
                 .maybeSingle();
 
             if (error || !data) return freshDefaults();
 
-            const gs = (data.good_stuff && data.good_stuff.date === todayStr())
-                ? data.good_stuff
-                : { date: todayStr(), items: [] };
+            let goodStuff     = normalizeGoodStuff(data.good_stuff);
+            let sessionsToday = 0;
+
+            // daily_log is authoritative for today's values + sessions.
+            try {
+                const { data: row } = await db
+                    .from('daily_log')
+                    .select('values, sessions_today')
+                    .eq('user_id', USER_ID)
+                    .eq('log_date', todayStr())
+                    .maybeSingle();
+                if (row) {
+                    if (row.values && typeof row.values === 'object') {
+                        goodStuff = { date: todayStr(), values: row.values };
+                    }
+                    sessionsToday = row.sessions_today ?? 0;
+                }
+            } catch(e) { /* fall back to tab_state good_stuff */ }
 
             return {
                 theme:           data.theme           || 'light',
@@ -809,7 +1023,10 @@
                 startDate:       data.start_date      || todayStr(),
                 exerciseDate:    data.exercise_date   || null,
                 windowDate:      data.window_date     || null,
-                goodStuff:       gs,
+                goodStuff:       goodStuff,
+                sessionsToday:   sessionsToday,
+                lastInsight:     data.last_insight    || null,
+                lastInsightAt:   data.last_insight_at || null,
             };
         } catch(e) {
             return freshDefaults();
@@ -818,6 +1035,8 @@
 
     // ── Supabase write ────────────────────────────────────────
     async function save() {
+        const now   = new Date().toISOString();
+        const today = todayStr();
         try {
             await db.from('tab_state').upsert(
                 {
@@ -828,9 +1047,26 @@
                     window_date:      S.windowDate,
                     theme:            S.theme,
                     good_stuff:       S.goodStuff,
-                    updated_at:       new Date().toISOString(),
+                    last_insight:     S.lastInsight,
+                    last_insight_at:  S.lastInsightAt,
+                    updated_at:       now,
                 },
                 { onConflict: 'user_id' }
+            );
+        } catch(e) {}
+        // Persist today's history row so trends accumulate (no rollover logic needed).
+        try {
+            await db.from('daily_log').upsert(
+                {
+                    user_id:        USER_ID,
+                    log_date:       today,
+                    values:         S.goodStuff.values,
+                    exercise_done:  S.exerciseDate === today,
+                    window_open:    S.windowDate   === today,
+                    sessions_today: S.sessionsToday,
+                    updated_at:     now,
+                },
+                { onConflict: 'user_id,log_date' }
             );
         } catch(e) {}
     }
@@ -838,7 +1074,16 @@
     // ── State helpers ─────────────────────────────────────────
     function exerciseDoneToday() { return S.exerciseDate === todayStr(); }
     function windowOpenToday()   { return S.windowDate   === todayStr(); }
-    function isChecked(key)      { return S.goodStuff.items.includes(key); }
+    function habitValue(key)     { return S.goodStuff.values[key]; }
+    function isChecked(key)      { return S.goodStuff.values[key] === true; }
+    function hasValue(key)       { const v = S.goodStuff.values[key]; return v !== undefined && v !== null; }
+
+    function clampHabit(h, v) {
+        v = Math.round(v / h.step) * h.step;
+        v = Math.max(h.min, Math.min(h.max, v));
+        // Avoid floating-point noise from 0.5 steps.
+        return Math.round(v * 100) / 100;
+    }
 
     function daysActive() {
         const diff = Math.floor((new Date() - new Date(S.startDate)) / 86400000);
@@ -858,26 +1103,37 @@
 
     async function addAvoided() {
         S.sessionsAvoided++;
+        S.sessionsToday++;
         const el = document.getElementById('sessionsNum');
         el.style.transform = 'scale(1.2)';
         setTimeout(() => { el.style.transform = 'scale(1)'; }, 140);
         render(); await save();
     }
 
-    async function toggleGoodItem(key) {
-        const items = S.goodStuff.items;
-        const idx = items.indexOf(key);
-        if (idx === -1) {
-            items.push(key);
+    async function toggleHabit(key) {
+        S.goodStuff.date = todayStr();
+        const next = !isChecked(key);
+        if (next) {
+            S.goodStuff.values[key] = true;
             const circle = document.getElementById('gs-' + key);
             if (circle) {
                 circle.style.transform = 'scale(1.4)';
                 setTimeout(() => { circle.style.transform = 'scale(1)'; }, 160);
             }
         } else {
-            items.splice(idx, 1);
+            delete S.goodStuff.values[key];
         }
+        render(); await save();
+    }
+
+    async function stepHabit(key, dir) {
+        const h = HABIT_MAP[key];
+        if (!h) return;
         S.goodStuff.date = todayStr();
+        const cur = hasValue(key) ? Number(S.goodStuff.values[key]) : (h.type === 'scale' ? h.min : 0);
+        const next = clampHabit(h, cur + dir * h.step);
+        if (next === 0 && h.type !== 'scale' && dir < 0 && !hasValue(key)) return;
+        S.goodStuff.values[key] = next;
         render(); await save();
     }
 
@@ -898,6 +1154,54 @@
         document.getElementById('themeToggle').textContent = S.theme === 'light' ? '☾' : '☀';
     }
 
+    // Build the habit list DOM once from HABITS; render() then syncs state.
+    function buildHabitList() {
+        const list = document.getElementById('goodStuffList');
+        list.innerHTML = '';
+        for (const h of HABITS) {
+            const row = document.createElement('div');
+            row.className = 'good-item' + (isNumeric(h) ? ' numeric' : '');
+            row.dataset.key = h.key;
+
+            if (h.type === 'bool') {
+                const check = document.createElement('div');
+                check.className = 'good-check';
+                check.id = 'gs-' + h.key;
+                check.textContent = '✓';
+                const label = document.createElement('span');
+                label.className = 'good-item-label';
+                label.textContent = h.label;
+                row.append(check, label);
+                row.addEventListener('click', () => toggleHabit(h.key));
+            } else {
+                const label = document.createElement('span');
+                label.className = 'good-item-label';
+                label.textContent = h.label;
+
+                const stepper = document.createElement('div');
+                stepper.className = 'stepper';
+                const minus = document.createElement('button');
+                minus.className = 'stepper-btn';
+                minus.textContent = '−';
+                minus.addEventListener('click', () => stepHabit(h.key, -1));
+                const val = document.createElement('div');
+                val.className = 'stepper-value';
+                val.id = 'gs-' + h.key;
+                const plus = document.createElement('button');
+                plus.className = 'stepper-btn';
+                plus.textContent = '+';
+                plus.addEventListener('click', () => stepHabit(h.key, +1));
+                stepper.append(minus, val, plus);
+                row.append(label, stepper);
+            }
+            list.append(row);
+        }
+    }
+
+    function fmtNum(n) {
+        return Number.isInteger(n) ? String(n) : String(n);
+    }
+
     function render() {
         document.getElementById('sessionsNum').textContent = S.sessionsAvoided;
         document.getElementById('daysNum').textContent     = daysActive();
@@ -912,9 +1216,20 @@
         document.getElementById('windowLabel').textContent = open ? 'Window Open' : 'Window Closed';
         document.getElementById('windowIcon').textContent  = open ? '◎' : '⊘';
 
-        for (const key of GOOD_KEYS) {
-            const row = document.querySelector(`.good-item[data-key="${key}"]`);
-            if (row) row.classList.toggle('checked', isChecked(key));
+        for (const h of HABITS) {
+            const row = document.querySelector(`.good-item[data-key="${h.key}"]`);
+            if (!row) continue;
+            if (h.type === 'bool') {
+                row.classList.toggle('checked', isChecked(h.key));
+            } else {
+                const set = hasValue(h.key);
+                row.classList.toggle('has-value', set);
+                const cell = document.getElementById('gs-' + h.key);
+                if (cell) {
+                    const v = set ? fmtNum(Number(S.goodStuff.values[h.key])) : '–';
+                    cell.innerHTML = `${v}${h.unit ? `<span class="unit">${h.unit}</span>` : ''}`;
+                }
+            }
         }
 
         applyTheme();
@@ -932,8 +1247,216 @@
     }
 
     // ── Modals ────────────────────────────────────────────────
-    function openModal(id)  { document.getElementById(id + 'Modal').classList.add('active'); }
+    function openModal(id)  {
+        document.getElementById(id + 'Modal').classList.add('active');
+        if (id === 'history')  loadHistory();
+        if (id === 'insights') loadInsight();
+    }
     function closeModal(id) { document.getElementById(id + 'Modal').classList.remove('active'); }
+
+    // ── History ───────────────────────────────────────────────
+    async function fetchHistory(days = 30) {
+        try {
+            const { data } = await db
+                .from('daily_log')
+                .select('log_date, values, exercise_done, window_open, sessions_today')
+                .eq('user_id', USER_ID)
+                .order('log_date', { ascending: false })
+                .limit(days);
+            return data || [];
+        } catch(e) { return []; }
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => (
+            { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+        ));
+    }
+
+    async function loadHistory() {
+        const el = document.getElementById('historyContent');
+        el.innerHTML = '<div class="hist-empty">Loading…</div>';
+        const rows = await fetchHistory(30);
+        if (!rows.length) {
+            el.innerHTML = '<div class="hist-empty">No history yet.<br>Track a few days and trends will show up here.</div>';
+            return;
+        }
+        // rows are newest-first; oldest-first for left→right strips.
+        const asc = [...rows].reverse();
+        const last14 = asc.slice(-14);
+        let html = '';
+
+        // Sessions avoided per day.
+        const maxSessions = Math.max(1, ...asc.map(r => r.sessions_today || 0));
+        html += histNumericBlock('Sessions avoided', asc.map(r => r.sessions_today || 0), maxSessions, '', rows);
+
+        // Bool habits → % done + 14-day dot strip. Numeric → sparkline + averages.
+        for (const h of HABITS) {
+            if (h.type === 'bool') {
+                const doneCount = rows.filter(r => r.values && r.values[h.key] === true).length;
+                const pct = Math.round((doneCount / rows.length) * 100);
+                const strip = last14.map(r => {
+                    const on = r.values && r.values[h.key] === true;
+                    return `<div class="hist-cell ${on ? 'on' : ''}" style="height:100%"></div>`;
+                }).join('');
+                html += `<div class="hist-row">
+                    <div class="hist-head">
+                        <span class="hist-label">${escapeHtml(h.label)}</span>
+                        <span class="hist-stat">${pct}% · ${doneCount}/${rows.length} days</span>
+                    </div>
+                    <div class="hist-strip">${strip}</div>
+                </div>`;
+            } else {
+                const vals = rows.map(r => (r.values && r.values[h.key] != null) ? Number(r.values[h.key]) : null);
+                const present = vals.filter(v => v != null);
+                if (!present.length) continue;
+                const avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0) / arr.length) : 0;
+                const last7  = vals.slice(0, 7).filter(v => v != null);
+                const a7  = avg(last7);
+                const a30 = avg(present);
+                const sparkVals = asc.map(r => (r.values && r.values[h.key] != null) ? Number(r.values[h.key]) : null);
+                const maxV = Math.max(...present);
+                const stat = `7d ${fmtNum(Math.round(a7*10)/10)}${h.unit||''} · 30d ${fmtNum(Math.round(a30*10)/10)}${h.unit||''}`;
+                html += histNumericBlock(h.label, sparkVals, maxV, h.unit || '', null, stat);
+            }
+        }
+        el.innerHTML = html;
+    }
+
+    // Bar sparkline for numeric series. `vals` may contain nulls (untracked days).
+    function histNumericBlock(label, vals, maxV, unit, rowsForStat, statOverride) {
+        const bars = vals.map(v => {
+            if (v == null) return `<div class="hist-bar empty" style="height:6%"></div>`;
+            const pct = maxV > 0 ? Math.max(6, (v / maxV) * 100) : 6;
+            return `<div class="hist-bar" style="height:${pct}%"></div>`;
+        }).join('');
+        let stat = statOverride;
+        if (!stat && rowsForStat) {
+            const total = vals.reduce((a,b) => a + (b||0), 0);
+            stat = `${total} total`;
+        }
+        return `<div class="hist-row">
+            <div class="hist-head">
+                <span class="hist-label">${escapeHtml(label)}</span>
+                <span class="hist-stat">${escapeHtml(stat || '')}</span>
+            </div>
+            <div class="hist-strip">${bars}</div>
+        </div>`;
+    }
+
+    // ── Insights (Claude) ─────────────────────────────────────
+    function fmtAgo(iso) {
+        if (!iso) return '';
+        const diff = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 1)   return 'just now';
+        if (mins < 60)  return `${mins}m ago`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24)   return `${hrs}h ago`;
+        return `${Math.floor(hrs / 24)}d ago`;
+    }
+
+    async function buildStats() {
+        const rows = await fetchHistory(30);
+        const asc  = [...rows].reverse();
+        const avg  = arr => arr.length ? Math.round((arr.reduce((a,b)=>a+b,0)/arr.length)*10)/10 : null;
+
+        const habitSummary = {};
+        for (const h of HABITS) {
+            if (h.type === 'bool') {
+                const d7  = rows.slice(0, 7);
+                const d30 = rows;
+                const done7  = d7.filter(r => r.values && r.values[h.key] === true).length;
+                const done30 = d30.filter(r => r.values && r.values[h.key] === true).length;
+                habitSummary[h.key] = {
+                    label: h.label, type: 'bool',
+                    last7_days_done: `${done7}/${d7.length}`,
+                    last30_days_done: `${done30}/${d30.length}`,
+                };
+            } else {
+                const v7  = rows.slice(0, 7).map(r => r.values && r.values[h.key] != null ? Number(r.values[h.key]) : null).filter(v => v != null);
+                const v30 = rows.map(r => r.values && r.values[h.key] != null ? Number(r.values[h.key]) : null).filter(v => v != null);
+                habitSummary[h.key] = {
+                    label: h.label, type: 'numeric', unit: h.unit || '',
+                    avg_last7: avg(v7), avg_last30: avg(v30),
+                    days_tracked_30: v30.length,
+                };
+            }
+        }
+
+        return {
+            today: todayStr(),
+            days_active: daysActive(),
+            sessions_avoided_total: S.sessionsAvoided,
+            sessions_avoided_today: S.sessionsToday,
+            sessions_avoided_last7: asc.slice(-7).reduce((a,r)=>a+(r.sessions_today||0),0),
+            exercise_done_last7: rows.slice(0,7).filter(r => r.exercise_done).length,
+            habits: habitSummary,
+        };
+    }
+
+    let insightLoading = false;
+
+    function showInsight() {
+        const body = document.getElementById('insightBody');
+        const meta = document.getElementById('insightMeta');
+        if (S.lastInsight) {
+            body.classList.remove('muted');
+            body.textContent = S.lastInsight;
+            meta.textContent = S.lastInsightAt ? `Last updated ${fmtAgo(S.lastInsightAt)}` : '';
+        } else {
+            body.classList.add('muted');
+            body.textContent = 'No insights yet — tap Refresh to have Claude read your stats.';
+            meta.innerHTML = '&nbsp;';
+        }
+    }
+
+    function loadInsight() {
+        // Show cached insight; only call the API on explicit refresh (or if empty).
+        showInsight();
+        if (!S.lastInsight && !insightLoading) refreshInsight();
+    }
+
+    async function refreshInsight() {
+        if (insightLoading) return;
+        insightLoading = true;
+        const body = document.getElementById('insightBody');
+        const meta = document.getElementById('insightMeta');
+        const btn  = document.getElementById('insightRefresh');
+        btn.disabled = true;
+        body.classList.add('muted');
+        body.textContent = 'Reading your stats…';
+        meta.innerHTML = '&nbsp;';
+        try {
+            const stats = await buildStats();
+            const res = await fetch(FEEDBACK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'apikey': SUPABASE_ANON_KEY,
+                    'x-app-token': APP_TOKEN,
+                },
+                body: JSON.stringify({ stats }),
+            });
+            if (!res.ok) {
+                const err = await res.text();
+                throw new Error(`${res.status} ${err}`);
+            }
+            const data = await res.json();
+            S.lastInsight   = (data.feedback || '').trim() || 'No response.';
+            S.lastInsightAt = new Date().toISOString();
+            await save();
+            showInsight();
+        } catch(e) {
+            body.classList.add('muted');
+            body.textContent = 'Could not reach Claude right now. Check that the feedback function is deployed and its API key is set, then try again.';
+            meta.innerHTML = '&nbsp;';
+        } finally {
+            insightLoading = false;
+            btn.disabled = false;
+        }
+    }
 
     document.querySelectorAll('.modal-overlay').forEach(o => {
         o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
@@ -951,6 +1474,7 @@
     async function init() {
         updateClock();
         setInterval(updateClock, 10000);
+        buildHabitList();
         S = await fetchState();
         render();
         document.body.classList.remove('loading');
@@ -960,10 +1484,10 @@
     window.toggleExercise = toggleExercise;
     window.toggleWindow   = toggleWindow;
     window.addAvoided     = addAvoided;
-    window.toggleGoodItem = toggleGoodItem;
     window.openModal      = openModal;
     window.closeModal     = closeModal;
     window.resetAll       = resetAll;
+    window.refreshInsight = refreshInsight;
 
     // ── Boot: check auth cookie ───────────────────────────────
     if (getCookie(COOKIE_NAME) === '1') {
