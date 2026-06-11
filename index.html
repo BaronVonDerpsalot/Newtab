@@ -49,6 +49,21 @@
             max-width: 400px;
         }
 
+        .page.two-col { max-width: 860px; }
+
+        /* ── Two-column layout ─────────────────────────────── */
+        .columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 720px) {
+            .columns { grid-template-columns: 1fr; gap: 1.75rem; }
+            .page.two-col { max-width: 400px; }
+        }
+
         body.loading #sessionsNum,
         body.loading #daysNum {
             visibility: hidden;
@@ -373,6 +388,85 @@
 
         .good-item.numeric.has-value .stepper-value { color: var(--green-muted); }
 
+        /* ── Slider habit rows ─────────────────────────────── */
+        .good-item.slider {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+            cursor: default;
+        }
+
+        .slider-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .slider-value {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+            transition: color 0.15s;
+        }
+
+        .slider-value .unit {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.8;
+            margin-left: 0.15rem;
+        }
+
+        .slider-wrap { position: relative; padding: 0.35rem 0; }
+
+        .slider-ideal {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--muted);
+            opacity: 0.35;
+            border-radius: 1px;
+            pointer-events: none;
+            transform: translateX(-1px);
+        }
+
+        input[type="range"].habit-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border);
+            outline: none;
+            cursor: pointer;
+            accent-color: var(--accent, var(--green));
+        }
+
+        input[type="range"].habit-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent, var(--green));
+            border: 2px solid var(--bg);
+            box-shadow: 0 0 0 1px var(--border);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        input[type="range"].habit-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent, var(--green));
+            border: 2px solid var(--bg);
+            cursor: pointer;
+        }
+
         .stepper-value .unit {
             font-size: 0.6rem;
             font-weight: 700;
@@ -674,6 +768,20 @@
             display: inline-block;
         }
 
+        .live-dot .version {
+            color: var(--border);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+
+        /* Read-only status pill (auto-managed window) */
+        .status-btn.readonly { cursor: default; }
+        .status-btn.readonly:hover { border-color: var(--border); color: var(--muted); }
+        .status-btn.readonly.active:hover {
+            border-color: var(--green);
+            color: var(--green-muted);
+        }
+
         .bump {
             display: inline-block;
             transition: transform 0.12s ease;
@@ -702,48 +810,58 @@
 
 <button class="theme-toggle" id="themeToggle">☾</button>
 
-<div class="page">
+<div class="page two-col">
 
     <div class="clock" id="clock">00:00</div>
     <div class="date-line" id="dateLine">—</div>
 
-    <div class="stats">
-        <div class="stat">
-            <div class="stat-number"><span class="bump" id="sessionsNum">0</span></div>
-            <div class="stat-label">Sessions Avoided</div>
+    <div class="columns">
+
+        <!-- LEFT — good habits -->
+        <div class="col col-left">
+            <div class="section-label">Good stuff</div>
+            <div class="good-stuff-list" id="goodStuffList"></div>
         </div>
-        <div class="stat">
-            <div class="stat-number" id="daysNum">1</div>
-            <div class="stat-label">Days Active</div>
+
+        <!-- RIGHT — the recovery / session side -->
+        <div class="col col-right">
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number"><span class="bump" id="sessionsNum">0</span></div>
+                    <div class="stat-label">Sessions Avoided</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="daysNum">1</div>
+                    <div class="stat-label">Days Active</div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="section-label">Prerequisites</div>
+            <div class="status-row">
+                <button class="status-btn" id="exerciseBtn" onclick="toggleExercise()">
+                    <span id="exerciseLabel">Exercise</span>
+                    <span class="status-icon" id="exerciseIcon">○</span>
+                </button>
+                <div class="status-btn readonly" id="windowBtn">
+                    <span id="windowLabel">Window Closed</span>
+                    <span class="status-icon" id="windowIcon">⊘</span>
+                </div>
+            </div>
+
+            <button class="add-btn" id="needHelpBtn" onclick="openModal('help')" style="display:none;">Need help right now?</button>
+
+            <button class="add-btn" onclick="addAvoided()">+ Mark Session Avoided</button>
+
+            <hr>
+
+            <button class="add-btn" onclick="openModal('insights')" style="margin-top:0;">✦ Insights from Claude</button>
         </div>
+
     </div>
 
-    <hr>
-
-    <div class="section-label">Prerequisites</div>
-    <div class="status-row">
-        <button class="status-btn" id="exerciseBtn" onclick="toggleExercise()">
-            <span id="exerciseLabel">Exercise</span>
-            <span class="status-icon" id="exerciseIcon">○</span>
-        </button>
-        <button class="status-btn" id="windowBtn" onclick="toggleWindow()">
-            <span id="windowLabel">Window Closed</span>
-            <span class="status-icon" id="windowIcon">⊘</span>
-        </button>
-    </div>
-
-    <button class="add-btn" onclick="addAvoided()">+ Mark Session Avoided</button>
-
-    <hr>
-
-    <div class="section-label">Good stuff</div>
-    <div class="good-stuff-list" id="goodStuffList"></div>
-
-    <hr>
-
-    <button class="add-btn" onclick="openModal('insights')" style="margin-top:0;">✦ Insights from Claude</button>
-
-    <div class="modal-row" style="margin-top:0.55rem;">
+    <div class="modal-row" style="margin-top:1.75rem;">
         <button class="modal-btn" onclick="openModal('history')">History ↗</button>
         <button class="modal-btn" onclick="openModal('facts')">The Facts ↗</button>
         <button class="modal-btn" onclick="openModal('system')">The System ↗</button>
@@ -752,7 +870,20 @@
 </div>
 
 <button class="reset-btn" onclick="resetAll()">Reset</button>
-<div class="live-dot">Live</div>
+<div class="live-dot">Live <span class="version" id="versionTag"></span></div>
+
+<!-- HELP MODAL -->
+<div class="modal-overlay" id="helpModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Need Help Right Now</span>
+            <button class="modal-close" onclick="closeModal('help')">✕</button>
+        </div>
+        <div class="mc" id="helpContent">
+            <p>Placeholder — content coming soon.</p>
+        </div>
+    </div>
+</div>
 
 <!-- FACTS MODAL -->
 <div class="modal-overlay" id="factsModal">
@@ -902,8 +1033,18 @@
     const PASSWORD          = 'Christopher1';
     const COOKIE_NAME       = 'nt_auth';
 
+    const VERSION = 'v1.2.0';
+
+    // Location for the automatic (sunset-driven) dark mode. London by default.
+    const LOCATION = { lat: 51.5074, lng: -0.1278 };
+
+    // Session window: opens at 9pm, closes at midnight. Auto-managed.
+    const WINDOW_OPEN_HOUR  = 21;
+    const WINDOW_CLOSE_HOUR = 24;
+
     // Habits are data-driven — add/remove/reorder here and the UI follows.
-    // type: 'bool' (checkbox) | 'number' | 'scale' | 'count' (numeric stepper)
+    // type: 'bool' (checkbox) | 'scale' (stepper) | 'slider'
+    // goodDir: 'high' (more = better) | 'target' (ideal value is best)
     const HABITS = [
         { key: 'sunlight',     label: 'Sunlight / time outside',             type: 'bool' },
         { key: 'hydration',    label: 'Hydration',                           type: 'bool' },
@@ -911,13 +1052,32 @@
         { key: 'social',       label: 'Spoke to someone',                    type: 'bool' },
         { key: 'creative',     label: 'Did something creative or productive', type: 'bool' },
         { key: 'no_doom',      label: 'No doom scrolling before bed',        type: 'bool' },
-        { key: 'sleep_hours',  label: 'Hours slept',  type: 'number', unit: 'h',       min: 0, max: 14,  step: 0.5 },
-        { key: 'mood',         label: 'Mood',         type: 'scale',  unit: '/ 5',     min: 1, max: 5,   step: 1   },
-        { key: 'water',        label: 'Water',        type: 'count',  unit: 'glasses', min: 0, max: 20,  step: 1   },
-        { key: 'exercise_min', label: 'Exercise',     type: 'number', unit: 'min',     min: 0, max: 180, step: 5   },
+        { key: 'sleep_hours',  label: 'Hours slept', type: 'slider', unit: 'h',   min: 0, max: 14, step: 0.5, default: 8, ideal: 8, goodDir: 'target' },
+        { key: 'mood',         label: 'Mood',        type: 'scale',  unit: '/ 5', min: 1, max: 5,  step: 1,   default: 3, ideal: 5, goodDir: 'high' },
+        { key: 'water',        label: 'Water',       type: 'slider', unit: 'L',   min: 0, max: 4,  step: 0.1, default: 0, ideal: 3, goodDir: 'target' },
+        { key: 'exercise_min', label: 'Exercise',    type: 'slider', unit: 'min', min: 0, max: 60, step: 5,   default: 0, ideal: 60, goodDir: 'high', maxLabel: '60+' },
     ];
     const HABIT_MAP = Object.fromEntries(HABITS.map(h => [h.key, h]));
     const isNumeric = h => h.type !== 'bool';
+
+    // Colour scale (green = good → pink = bad), from the user's palette.
+    const PALETTE = ['#99C64C','#B6B92E','#CCAB1E','#DD9D1E','#ED8C1D','#FC6E5D','#FC617D','#FF499E'];
+    const clamp01 = x => Math.max(0, Math.min(1, x));
+
+    // How "good" a numeric value is, 0..1 (1 = ideal/best).
+    function habitGoodness(h, v) {
+        if (v == null || isNaN(v)) return null;
+        if (h.goodDir === 'high') return clamp01((v - h.min) / ((h.max - h.min) || 1));
+        // 'target': peaks at h.ideal, falls off toward min/max.
+        if (v <= h.ideal) return clamp01((v - h.min) / ((h.ideal - h.min) || 1));
+        return clamp01((h.max - v) / ((h.max - h.ideal) || 1));
+    }
+
+    function goodnessColor(g) {
+        if (g == null) return null;
+        const idx = Math.round((1 - g) * (PALETTE.length - 1));
+        return PALETTE[Math.max(0, Math.min(PALETTE.length - 1, idx))];
+    }
 
     // Old binary key (sleep_ok) → migrated away from; kept for back-compat conversion.
     const LEGACY_BOOL_KEYS = ['sunlight','hydration','ate','social','creative','no_doom','sleep_ok'];
@@ -1062,7 +1222,7 @@
                     log_date:       today,
                     values:         S.goodStuff.values,
                     exercise_done:  S.exerciseDate === today,
-                    window_open:    S.windowDate   === today,
+                    window_open:    windowOpenToday(),
                     sessions_today: S.sessionsToday,
                     updated_at:     now,
                 },
@@ -1071,9 +1231,53 @@
         } catch(e) {}
     }
 
+    // ── Sun times (compact SunCalc) for auto dark mode ────────
+    const RAD = Math.PI / 180, DAY_MS = 864e5, J1970 = 2440588, J2000 = 2451545;
+    const toJulian = d => d.valueOf() / DAY_MS - 0.5 + J1970;
+    const fromJulian = j => new Date((j + 0.5 - J1970) * DAY_MS);
+    const toDays = d => toJulian(d) - J2000;
+    const EOBL = RAD * 23.4397;
+    const solarMeanAnomaly = d => RAD * (357.5291 + 0.98560028 * d);
+    const eclipticLongitude = M =>
+        M + RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M)) + RAD * 102.9372 + Math.PI;
+    const declination = l => Math.asin(Math.sin(EOBL) * Math.sin(l));
+    const J0 = 0.0009;
+    const julianCycle = (d, lw) => Math.round(d - J0 - lw / (2 * Math.PI));
+    const approxTransit = (Ht, lw, n) => J0 + (Ht + lw) / (2 * Math.PI) + n;
+    const solarTransitJ = (ds, M, L) => J2000 + ds + 0.0053 * Math.sin(M) - 0.0069 * Math.sin(2 * L);
+    const hourAngle = (h, phi, d) =>
+        Math.acos((Math.sin(h) - Math.sin(phi) * Math.sin(d)) / (Math.cos(phi) * Math.cos(d)));
+
+    function sunTimes(date, lat, lng) {
+        const lw = RAD * -lng, phi = RAD * lat, d = toDays(date);
+        const n = julianCycle(d, lw), ds = approxTransit(0, lw, n);
+        const M = solarMeanAnomaly(ds), L = eclipticLongitude(M), dec = declination(L);
+        const Jnoon = solarTransitJ(ds, M, L);
+        const w = hourAngle(-0.833 * RAD, phi, dec);
+        const Jset = solarTransitJ(approxTransit(w, lw, n), M, L);
+        const Jrise = Jnoon - (Jset - Jnoon);
+        return { sunrise: fromJulian(Jrise), sunset: fromJulian(Jset) };
+    }
+
+    function autoIsDark() {
+        try {
+            const { sunrise, sunset } = sunTimes(new Date(), LOCATION.lat, LOCATION.lng);
+            const now = Date.now();
+            return now >= sunset.getTime() || now < sunrise.getTime();
+        } catch (e) { return false; }
+    }
+
+    function effectiveTheme() {
+        return S.theme === 'auto' ? (autoIsDark() ? 'dark' : 'light') : S.theme;
+    }
+
     // ── State helpers ─────────────────────────────────────────
     function exerciseDoneToday() { return S.exerciseDate === todayStr(); }
-    function windowOpenToday()   { return S.windowDate   === todayStr(); }
+    // Session window is auto-managed: open 9pm → midnight.
+    function windowOpenToday() {
+        const h = new Date().getHours();
+        return h >= WINDOW_OPEN_HOUR && h < WINDOW_CLOSE_HOUR;
+    }
     function habitValue(key)     { return S.goodStuff.values[key]; }
     function isChecked(key)      { return S.goodStuff.values[key] === true; }
     function hasValue(key)       { const v = S.goodStuff.values[key]; return v !== undefined && v !== null; }
@@ -1093,11 +1297,6 @@
     // ── Actions ───────────────────────────────────────────────
     async function toggleExercise() {
         S.exerciseDate = exerciseDoneToday() ? null : todayStr();
-        render(); await save();
-    }
-
-    async function toggleWindow() {
-        S.windowDate = windowOpenToday() ? null : todayStr();
         render(); await save();
     }
 
@@ -1137,8 +1336,44 @@
         render(); await save();
     }
 
+    // Slider: update value + colour live (no DB write on every pixel)…
+    function setHabitLive(key, v) {
+        S.goodStuff.date = todayStr();
+        S.goodStuff.values[key] = v;
+        const h = HABIT_MAP[key];
+        const row = document.querySelector(`.good-item[data-key="${key}"]`);
+        if (row) row.classList.add('has-value');
+        paintNumeric(h, v);
+    }
+
+    // …then persist once the user lets go.
+    async function commitHabit(key, v) {
+        S.goodStuff.date = todayStr();
+        S.goodStuff.values[key] = v;
+        await save();
+    }
+
+    // Format a numeric habit value for display (handles exercise "60+").
+    function fmtHabitValue(h, v) {
+        if (h.maxLabel && v >= h.max) return h.maxLabel;
+        return Number.isInteger(v) ? String(v) : String(Math.round(v * 100) / 100);
+    }
+
+    // Apply value text + goodness colour to a slider/scale row.
+    function paintNumeric(h, v) {
+        const cell  = document.getElementById('gs-' + h.key);
+        const color = goodnessColor(habitGoodness(h, v));
+        if (cell) {
+            cell.innerHTML = `${fmtHabitValue(h, v)}${h.unit ? `<span class="unit">${h.unit}</span>` : ''}`;
+            if (color) cell.style.color = color;
+        }
+        const slider = document.getElementById('sl-' + h.key);
+        if (slider && color) slider.style.setProperty('--accent', color);
+    }
+
     async function toggleTheme() {
-        S.theme = S.theme === 'light' ? 'dark' : 'light';
+        // Cycle: light → dark → auto (sunset-driven) → light
+        S.theme = S.theme === 'light' ? 'dark' : S.theme === 'dark' ? 'auto' : 'light';
         applyTheme(); await save();
     }
 
@@ -1150,8 +1385,11 @@
 
     // ── Render ────────────────────────────────────────────────
     function applyTheme() {
-        document.documentElement.setAttribute('data-theme', S.theme);
-        document.getElementById('themeToggle').textContent = S.theme === 'light' ? '☾' : '☀';
+        document.documentElement.setAttribute('data-theme', effectiveTheme());
+        const icon = S.theme === 'auto' ? '◐' : S.theme === 'dark' ? '☀' : '☾';
+        const tt = document.getElementById('themeToggle');
+        tt.textContent = icon;
+        tt.title = S.theme === 'auto' ? 'Auto (sunset)' : S.theme === 'dark' ? 'Dark' : 'Light';
     }
 
     // Build the habit list DOM once from HABITS; render() then syncs state.
@@ -1173,6 +1411,39 @@
                 label.textContent = h.label;
                 row.append(check, label);
                 row.addEventListener('click', () => toggleHabit(h.key));
+            } else if (h.type === 'slider') {
+                const head = document.createElement('div');
+                head.className = 'slider-head';
+                const label = document.createElement('span');
+                label.className = 'good-item-label';
+                label.textContent = h.label;
+                const val = document.createElement('span');
+                val.className = 'slider-value';
+                val.id = 'gs-' + h.key;
+                head.append(label, val);
+
+                const wrap = document.createElement('div');
+                wrap.className = 'slider-wrap';
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.className = 'habit-slider';
+                slider.id = 'sl-' + h.key;
+                slider.min = h.min; slider.max = h.max; slider.step = h.step;
+                slider.value = h.default ?? h.min;
+                wrap.append(slider);
+
+                // Ideal marker for 'target' habits (e.g. water ~75%).
+                if (h.goodDir === 'target' && h.ideal != null) {
+                    const mark = document.createElement('div');
+                    mark.className = 'slider-ideal';
+                    mark.style.left = `${((h.ideal - h.min) / (h.max - h.min)) * 100}%`;
+                    mark.title = `Ideal ≈ ${h.ideal}${h.unit || ''}`;
+                    wrap.append(mark);
+                }
+
+                slider.addEventListener('input', () => setHabitLive(h.key, Number(slider.value)));
+                slider.addEventListener('change', () => commitHabit(h.key, Number(slider.value)));
+                row.append(head, wrap);
             } else {
                 const label = document.createElement('span');
                 label.className = 'good-item-label';
@@ -1215,19 +1486,40 @@
         document.getElementById('windowBtn').classList.toggle('active', open);
         document.getElementById('windowLabel').textContent = open ? 'Window Open' : 'Window Closed';
         document.getElementById('windowIcon').textContent  = open ? '◎' : '⊘';
+        // Offer help when the window is closed (the higher-risk craving moments).
+        const helpBtn = document.getElementById('needHelpBtn');
+        if (helpBtn) helpBtn.style.display = open ? 'none' : '';
 
         for (const h of HABITS) {
             const row = document.querySelector(`.good-item[data-key="${h.key}"]`);
             if (!row) continue;
             if (h.type === 'bool') {
                 row.classList.toggle('checked', isChecked(h.key));
+                continue;
+            }
+
+            const set = hasValue(h.key);
+            row.classList.toggle('has-value', set);
+
+            if (h.type === 'slider') {
+                const slider = document.getElementById('sl-' + h.key);
+                const v = set ? Number(S.goodStuff.values[h.key]) : (h.default ?? h.min);
+                if (slider) slider.value = v;
+                if (set) {
+                    paintNumeric(h, v);
+                } else {
+                    const cell = document.getElementById('gs-' + h.key);
+                    if (cell) cell.innerHTML = `${fmtHabitValue(h, v)}${h.unit ? `<span class="unit">${h.unit}</span>` : ''}`;
+                    if (slider) slider.style.removeProperty('--accent');
+                }
             } else {
-                const set = hasValue(h.key);
-                row.classList.toggle('has-value', set);
+                // scale / stepper
                 const cell = document.getElementById('gs-' + h.key);
                 if (cell) {
-                    const v = set ? fmtNum(Number(S.goodStuff.values[h.key])) : '–';
-                    cell.innerHTML = `${v}${h.unit ? `<span class="unit">${h.unit}</span>` : ''}`;
+                    const v = set ? Number(S.goodStuff.values[h.key]) : null;
+                    cell.innerHTML = `${set ? fmtHabitValue(h, v) : '–'}${h.unit ? `<span class="unit">${h.unit}</span>` : ''}`;
+                    const color = set ? goodnessColor(habitGoodness(h, v)) : null;
+                    cell.style.color = color || '';
                 }
             }
         }
@@ -1244,6 +1536,18 @@
         const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
         document.getElementById('clock').textContent    = `${hh}:${mm}`;
         document.getElementById('dateLine').textContent = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+
+        // Re-evaluate sunset-driven theme + the auto session window each tick.
+        applyTheme();
+        const open    = windowOpenToday();
+        const winBtn  = document.getElementById('windowBtn');
+        const helpBtn = document.getElementById('needHelpBtn');
+        if (winBtn) {
+            winBtn.classList.toggle('active', open);
+            document.getElementById('windowLabel').textContent = open ? 'Window Open' : 'Window Closed';
+            document.getElementById('windowIcon').textContent  = open ? '◎' : '⊘';
+        }
+        if (helpBtn) helpBtn.style.display = open ? 'none' : '';
     }
 
     // ── Modals ────────────────────────────────────────────────
@@ -1472,6 +1776,7 @@
 
     // ── Init ──────────────────────────────────────────────────
     async function init() {
+        document.getElementById('versionTag').textContent = VERSION;
         updateClock();
         setInterval(updateClock, 10000);
         buildHabitList();
@@ -1482,7 +1787,6 @@
 
     // ── Expose to window for inline onclick handlers ──────────
     window.toggleExercise = toggleExercise;
-    window.toggleWindow   = toggleWindow;
     window.addAvoided     = addAvoided;
     window.openModal      = openModal;
     window.closeModal     = closeModal;
