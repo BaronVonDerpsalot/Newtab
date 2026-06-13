@@ -484,5 +484,5 @@ input[type="range"]::-moz-range-thumb{
   .cell-actions  { order: 5; }
 
   .card { padding: var(--space-4); }
-  .stat-block { padding: 0 12px; }
+  .stat-block { padding: 16px 12px; text-align: center; }
 }
