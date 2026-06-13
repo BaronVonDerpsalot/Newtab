@@ -471,9 +471,9 @@ input[type="range"]::-moz-range-thumb{
     grid-row: auto;
   }
 
-  /* Hidden on mobile */
+  /* Hidden on mobile (! needed to override inline display:flex on some cards) */
   .cell-clock,.cell-upcoming,.cell-shortcuts,.cell-todo,.cell-gallery {
-    display: none;
+    display: none !important;
   }
 
   /* Mobile order: Habits → Sliders → Stats → Prereqs → Actions */
