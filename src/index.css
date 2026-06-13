@@ -457,3 +457,20 @@ input[type="range"]::-moz-range-thumb{
   margin-bottom:7px;background:var(--surface-2);
 }
 .config-row:last-child{margin-bottom:0}
+
+/* ── Mobile responsive ───────────────────────────── */
+@media (max-width: 640px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+    padding: 12px 12px 60px;
+  }
+  .cell-clock,.cell-stats,.cell-habits,.cell-sliders,
+  .cell-prereqs,.cell-actions,.cell-upcoming,.cell-shortcuts,
+  .cell-todo,.cell-gallery {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .card { padding: var(--space-4); }
+  .stat-block { padding: 0 12px; }
+  .clock-time { font-size: clamp(48px, 14vw, 100px); }
+}
