@@ -470,7 +470,19 @@ input[type="range"]::-moz-range-thumb{
     grid-column: auto;
     grid-row: auto;
   }
+
+  /* Hidden on mobile */
+  .cell-clock,.cell-upcoming,.cell-shortcuts,.cell-todo,.cell-gallery {
+    display: none;
+  }
+
+  /* Mobile order: Habits → Sliders → Stats → Prereqs → Actions */
+  .cell-habits   { order: 1; }
+  .cell-sliders  { order: 2; }
+  .cell-stats    { order: 3; }
+  .cell-prereqs  { order: 4; }
+  .cell-actions  { order: 5; }
+
   .card { padding: var(--space-4); }
   .stat-block { padding: 0 12px; }
-  .clock-time { font-size: clamp(48px, 14vw, 100px); }
 }
