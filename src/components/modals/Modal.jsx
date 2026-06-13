@@ -22,7 +22,7 @@ export function Modal({ id, onClose, S }) {
     breathe:  <BreatheModal/>,
     resources:<ResourcesModal/>,
     help:     <ChatModal S={S}/>,
-    facts:    <FactsModal/>,
+    facts:    <FactsModal S={S}/>,
     system:   <SystemModal/>,
     insights: <InsightsModal S={S}/>,
     history:  <HistoryModal/>,

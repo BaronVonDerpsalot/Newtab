@@ -10,6 +10,7 @@ export const PASSWORD          = env.VITE_PASSWORD || 'Christopher1';
 export const COOKIE_NAME       = 'nt_auth';
 export const FEEDBACK_URL      = `${SUPABASE_URL}/functions/v1/feedback`;
 export const CHAT_URL          = `${SUPABASE_URL}/functions/v1/chat`;
+export const DEBRIEF_URL       = `${SUPABASE_URL}/functions/v1/debrief`;
 export const APP_TOKEN         = env.VITE_APP_TOKEN || 'nt_4f8a2c9e7b1d6035';
 export const LOCATION          = { lat: 51.5074, lng: -0.1278 };
 export const WINDOW_OPEN_HOUR  = 21;
