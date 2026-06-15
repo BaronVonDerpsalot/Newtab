@@ -208,6 +208,21 @@ input[type="range"]::-moz-range-thumb{
 .mood-dot:hover{transform:scale(1.18)}
 .mood-dot.lit{background:var(--dot-c);border-color:var(--dot-c)}
 
+/* ── Drink picker ────────────────────────────────── */
+.drinks-row{flex-wrap:wrap}
+.drink-btns{display:flex;gap:5px;align-items:center;margin-left:auto;flex-wrap:wrap}
+.drink-btn{
+  display:flex;align-items:center;gap:3px;
+  padding:3px 8px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border-strong);
+  background:var(--surface);color:var(--text-1);
+  font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;
+  transition:background var(--trans-fast),border-color var(--trans-fast),color var(--trans-fast);
+}
+.drink-btn:hover{background:var(--surface-2);border-color:var(--accent)}
+.drink-btn-custom.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.drinks-custom-slider{width:100%;margin-top:6px}
+
 /* ── Prereqs ─────────────────────────────────────── */
 .prereq-row{
   display:flex;align-items:center;justify-content:space-between;

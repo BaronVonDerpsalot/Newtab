@@ -1,11 +1,26 @@
+import { useState } from 'react';
 import { slpColor, moodColor, waterColor, exColor, sliderBg } from '../../lib/colors.js';
+
+const DRINK_PRESETS = [
+  { emoji: '☕', label: 'Coffee', ml: 240 },
+  { emoji: '🥤', label: 'Can',    ml: 330 },
+  { emoji: '🍺', label: 'Pint',   ml: 568 },
+];
+
+function fmtDrinks(ml) {
+  if (!ml) return '—';
+  return ml >= 1000 ? `${(ml / 1000).toFixed(1)}L` : `${ml}ml`;
+}
 
 /* ── Sliders card (numeric habits) ───────────────── */
 export function SlidersCard({ values, onUpdate, onCommit }) {
-  const slp = values.sleep_hours ?? 8;
-  const mood = values.mood ?? 3;
-  const water = values.water ?? 0;
-  const ex = values.exercise_min ?? 0;
+  const [showCustom, setShowCustom] = useState(false);
+  const slp    = values.sleep_hours ?? 8;
+  const mood   = values.mood ?? 3;
+  const water  = values.water ?? 0;
+  const ex     = values.exercise_min ?? 0;
+  const drinks = values.drinks_ml ?? 0;
+
   return (
     <div className="card cell-sliders">
       <div className="slider-row">
@@ -57,6 +72,33 @@ export function SlidersCard({ values, onUpdate, onCommit }) {
           onChange={e=>onUpdate('exercise_min',parseFloat(e.target.value))}
           onMouseUp={e=>onCommit('exercise_min',parseFloat(e.target.value))}
           onTouchEnd={e=>onCommit('exercise_min',parseFloat(e.target.value))} />
+      </div>
+      <div className="slider-row drinks-row">
+        <div className="slider-meta">
+          <span className="slider-lbl">Drinks&thinsp;</span>
+          <span className="slider-val">{fmtDrinks(drinks)}</span>
+        </div>
+        <div className="drink-btns">
+          {DRINK_PRESETS.map(p => (
+            <button key={p.ml} className="drink-btn"
+              title={`Add ${p.label} (${p.ml}ml)`}
+              onClick={() => onCommit('drinks_ml', drinks + p.ml)}>
+              {p.emoji} {p.label}
+            </button>
+          ))}
+          <button className={`drink-btn drink-btn-custom${showCustom ? ' active' : ''}`}
+            onClick={() => setShowCustom(s => !s)}>
+            Custom
+          </button>
+        </div>
+        {showCustom && (
+          <input type="range" min={0} max={3000} step={10} value={drinks}
+            className="drinks-custom-slider"
+            style={{background:sliderBg(drinks,0,3000,'var(--accent)'),'--thumb-c':'var(--accent)'}}
+            onChange={e => onUpdate('drinks_ml', parseInt(e.target.value))}
+            onMouseUp={e => onCommit('drinks_ml', parseInt(e.target.value))}
+            onTouchEnd={e => onCommit('drinks_ml', parseInt(e.target.value))} />
+        )}
       </div>
     </div>
   );
