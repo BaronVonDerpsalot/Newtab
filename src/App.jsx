@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { VERSION } from './config.js';
 import { useTweaks } from './hooks/useTweaks.js';
 import { autoIsDark } from './lib/suncalc.js';
-import { todayStr } from './lib/time.js';
+import { effectiveDateStr, isDayManuallyEnded, endDay } from './lib/time.js';
 import {
   freshDefaults, daysActive, exerciseDoneToday, windowOpenToday,
   fetchState, saveState,
@@ -52,7 +52,9 @@ export function App() {
     ];}catch{return[];}
   });
   const [time,setTime]=useState(new Date());
+  const [dayEnded,setDayEnded]=useState(isDayManuallyEnded);
   const SRef=useRef(null);
+  const effectiveDateRef=useRef(effectiveDateStr());
 
   /* Initial load */
   useEffect(()=>{
@@ -64,9 +66,17 @@ export function App() {
     });
   },[]);
 
-  /* Clock tick */
+  /* Clock tick + effective-date rollover detection */
   useEffect(()=>{
-    const id=setInterval(()=>setTime(new Date()),10000);
+    const id=setInterval(()=>{
+      setTime(new Date());
+      const cur=effectiveDateStr();
+      if(cur!==effectiveDateRef.current){
+        effectiveDateRef.current=cur;
+        setDayEnded(isDayManuallyEnded());
+        fetchState().then(({state,ok})=>{setS(state);SRef.current=state;setSyncState(ok?'idle':'error');});
+      }
+    },10000);
     return()=>clearInterval(id);
   },[]);
 
@@ -113,6 +123,15 @@ export function App() {
     setSyncState(ok?'idle':'error');
   },[]);
 
+  const handleEndDay=useCallback(()=>{
+    endDay();
+    const cur=effectiveDateStr();
+    effectiveDateRef.current=cur;
+    setDayEnded(true);
+    setSyncState('syncing');
+    fetchState().then(({state,ok})=>{setS(state);SRef.current=state;setSyncState(ok?'idle':'error');});
+  },[]);
+
   const updateS=useCallback((updater)=>{
     setS(prev=>{
       const next=updater(prev||freshDefaults());
@@ -135,22 +154,24 @@ export function App() {
           onToggle={key=>updateS(s=>{
             const vs={...s.goodStuff.values};
             if(vs[key]===true) delete vs[key]; else vs[key]=true;
-            return{...s,goodStuff:{date:todayStr(),values:vs}};
+            return{...s,goodStuff:{date:effectiveDateStr(),values:vs}};
           })}/>
 
         <SlidersCard values={S.goodStuff.values}
-          onUpdate={(key,val)=>setS(s=>({...s,goodStuff:{date:todayStr(),values:{...s.goodStuff.values,[key]:val}}}))}
-          onCommit={(key,val)=>updateS(s=>({...s,goodStuff:{date:todayStr(),values:{...s.goodStuff.values,[key]:val}}}))}/>
+          onUpdate={(key,val)=>setS(s=>({...s,goodStuff:{date:effectiveDateStr(),values:{...s.goodStuff.values,[key]:val}}}))}
+          onCommit={(key,val)=>updateS(s=>({...s,goodStuff:{date:effectiveDateStr(),values:{...s.goodStuff.values,[key]:val}}}))}/>
 
         <PrereqsCard
           exerciseDone={exerciseDoneToday(S.exerciseDate)}
           windowOpen={windowOpenToday()}
-          onToggleExercise={()=>updateS(s=>({...s,exerciseDate:exerciseDoneToday(s.exerciseDate)?null:todayStr()}))}/>
+          onToggleExercise={()=>updateS(s=>({...s,exerciseDate:exerciseDoneToday(s.exerciseDate)?null:effectiveDateStr()}))}/>
 
         <ActionsCard
           onMarkAvoided={()=>updateS(s=>({...s,sessionsAvoided:s.sessionsAvoided+1,sessionsToday:(s.sessionsToday||0)+1}))}
           onOpenModal={setModal}
-          windowOpen={windowOpenToday()}/>
+          windowOpen={windowOpenToday()}
+          dayEnded={dayEnded}
+          onEndDay={handleEndDay}/>
 
         <UpcomingCard/>
 
