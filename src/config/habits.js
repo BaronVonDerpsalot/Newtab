@@ -10,6 +10,7 @@ export const HABITS = [
   { key:'mood',         label:'Mood',        type:'scale',  unit:'/ 5', min:1, max:5,  step:1,  default:3,  ideal:5,  goodDir:'high' },
   { key:'water',        label:'Water',       type:'slider', unit:'L',   min:0, max:4,  step:.1, default:0,  ideal:3,  goodDir:'target' },
   { key:'exercise_min', label:'Exercise',    type:'slider', unit:'MIN', min:0, max:60, step:5,  default:0,  ideal:60, goodDir:'high', maxLabel:'60+' },
+  { key:'drinks_ml',   label:'Drinks',      type:'drinks', unit:'ml',  min:0, max:3000, step:10, default:0 },
 ];
 export const BOOL_HABITS    = HABITS.filter(h => h.type === 'bool');
 export const NUMERIC_HABITS = HABITS.filter(h => h.type !== 'bool');
