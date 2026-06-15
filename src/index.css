@@ -263,6 +263,8 @@ input[type="range"]::-moz-range-thumb{
 .action-btn.strong:hover{background:var(--fill-bg);color:var(--fill-text);border-color:var(--fill-bg)}
 .action-row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .action-row-2 .action-btn{margin-bottom:0}
+.end-day-btn{opacity:.7;font-style:italic}
+.end-day-btn:disabled{opacity:.45;cursor:default;pointer-events:none}
 
 /* ── Milestones ──────────────────────────────────── */
 .milestone-item{

@@ -1,5 +1,5 @@
 /* ── Actions card ─────────────────────────────────── */
-export function ActionsCard({ onMarkAvoided, onOpenModal, windowOpen }) {
+export function ActionsCard({ onMarkAvoided, onOpenModal, windowOpen, dayEnded, onEndDay }) {
   return (
     <div className="card cell-actions" style={{display:'flex',flexDirection:'column'}}>
       {!windowOpen && <button className="action-btn" onClick={()=>onOpenModal('help')}>Need help right now?</button>}
@@ -12,6 +12,14 @@ export function ActionsCard({ onMarkAvoided, onOpenModal, windowOpen }) {
       <div className="m-divider"></div>
       <button className="action-btn" onClick={()=>onOpenModal('insights')}>✦ Insights from Claude</button>
       <button className="action-btn" onClick={()=>onOpenModal('history')}>History ↗</button>
+      <div className="m-divider"></div>
+      <button
+        className="action-btn end-day-btn"
+        onClick={!dayEnded ? onEndDay : undefined}
+        disabled={dayEnded}
+      >
+        {dayEnded ? 'Day ended ✓' : 'End day →'}
+      </button>
     </div>
   );
 }

@@ -1,22 +1,23 @@
 import { db } from './supabase.js';
 import { USER_ID, WINDOW_OPEN_HOUR, WINDOW_CLOSE_HOUR } from '../config.js';
 import { HABITS } from '../config/habits.js';
-import { todayStr } from './time.js';
+import { todayStr, effectiveDateStr } from './time.js';
 
 /* ── State helpers ────────────────────────────────── */
 export function freshDefaults() {
   return { theme:'dark', sessionsAvoided:0, startDate:todayStr(), exerciseDate:null,
-    windowDate:null, goodStuff:{date:todayStr(),values:{}}, sessionsToday:0,
+    windowDate:null, goodStuff:{date:effectiveDateStr(),values:{}}, sessionsToday:0,
     lastInsight:null, lastInsightAt:null };
 }
 export function normalizeGoodStuff(gs) {
-  if (!gs || gs.date !== todayStr()) return { date:todayStr(), values:{} };
+  const eff = effectiveDateStr();
+  if (!gs || gs.date !== eff) return { date:eff, values:{} };
   if (gs.values && typeof gs.values === 'object') return { date:gs.date, values:gs.values };
   if (Array.isArray(gs.items)) { const values={}; for(const k of gs.items) values[k]=true; return{date:gs.date,values}; }
-  return { date:todayStr(), values:{} };
+  return { date:eff, values:{} };
 }
 export function daysActive(startDate) { return Math.max(0, Math.floor((new Date()-new Date(startDate))/86400000))+1; }
-export function exerciseDoneToday(ed) { return ed === todayStr(); }
+export function exerciseDoneToday(ed) { return ed === effectiveDateStr(); }
 export function windowOpenToday() { const h=new Date().getHours(); return h>=WINDOW_OPEN_HOUR&&h<WINDOW_CLOSE_HOUR; }
 
 /* ── Supabase ─────────────────────────────────────── */
@@ -28,9 +29,10 @@ export async function fetchState() {
     if(error||!data) return{state:freshDefaults(),ok:false};
     let goodStuff=normalizeGoodStuff(data.good_stuff),sessionsToday=0;
     try {
+      const eff=effectiveDateStr();
       const{data:row}=await db.from('daily_log')
-        .select('values,sessions_today').eq('user_id',USER_ID).eq('log_date',todayStr()).maybeSingle();
-      if(row){if(row.values&&typeof row.values==='object') goodStuff={date:todayStr(),values:row.values}; sessionsToday=row.sessions_today??0;}
+        .select('values,sessions_today').eq('user_id',USER_ID).eq('log_date',eff).maybeSingle();
+      if(row){if(row.values&&typeof row.values==='object') goodStuff={date:eff,values:row.values}; sessionsToday=row.sessions_today??0;}
     }catch{}
     return{state:{
       theme:data.theme||'dark',sessionsAvoided:data.sessions_avoided??0,
@@ -41,9 +43,9 @@ export async function fetchState() {
   }catch{return{state:freshDefaults(),ok:false};}
 }
 export async function saveState(S) {
-  const now=new Date().toISOString(),today=todayStr(); let ok=true;
+  const now=new Date().toISOString(),eff=effectiveDateStr(); let ok=true;
   try{const{error}=await db.from('tab_state').upsert({user_id:USER_ID,sessions_avoided:S.sessionsAvoided,start_date:S.startDate,exercise_date:S.exerciseDate,window_date:S.windowDate,theme:S.theme,good_stuff:S.goodStuff,last_insight:S.lastInsight,last_insight_at:S.lastInsightAt,updated_at:now},{onConflict:'user_id'});if(error)ok=false;}catch{ok=false;}
-  try{const{error}=await db.from('daily_log').upsert({user_id:USER_ID,log_date:today,values:S.goodStuff.values,exercise_done:S.exerciseDate===today,window_open:windowOpenToday(),sessions_today:S.sessionsToday||0,updated_at:now},{onConflict:'user_id,log_date'});if(error)ok=false;}catch{ok=false;}
+  try{const{error}=await db.from('daily_log').upsert({user_id:USER_ID,log_date:eff,values:S.goodStuff.values,exercise_done:S.exerciseDate===eff,window_open:windowOpenToday(),sessions_today:S.sessionsToday||0,updated_at:now},{onConflict:'user_id,log_date'});if(error)ok=false;}catch{ok=false;}
   return ok;
 }
 export async function fetchHistory(days=30) {
@@ -63,5 +65,5 @@ export async function buildStats(S) {
       habitSummary[h.key]={label:h.label,type:'numeric',unit:h.unit||'',avg_last7:avg(v7),avg_last30:avg(v30),days_tracked_30:v30.length};
     }
   }
-  return{today:todayStr(),days_active:daysActive(S.startDate),sessions_avoided_total:S.sessionsAvoided,sessions_avoided_today:S.sessionsToday,sessions_avoided_last7:asc.slice(-7).reduce((a,r)=>a+(r.sessions_today||0),0),exercise_done_last7:rows.slice(0,7).filter(r=>r.exercise_done).length,habits:habitSummary};
+  return{today:effectiveDateStr(),days_active:daysActive(S.startDate),sessions_avoided_total:S.sessionsAvoided,sessions_avoided_today:S.sessionsToday,sessions_avoided_last7:asc.slice(-7).reduce((a,r)=>a+(r.sessions_today||0),0),exercise_done_last7:rows.slice(0,7).filter(r=>r.exercise_done).length,habits:habitSummary};
 }
