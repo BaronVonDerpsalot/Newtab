@@ -220,6 +220,15 @@ input[type="range"]::-moz-range-thumb{
   transition:background var(--trans-fast),border-color var(--trans-fast),color var(--trans-fast);
 }
 .drink-btn:hover{background:var(--surface-2);border-color:var(--accent)}
+.drink-btn.pressing{
+  background:rgba(217,64,64,.12);border-color:#d94040;color:#d94040;
+  animation:drink-hold var(--drink-hold-dur,600ms) linear forwards;
+}
+@keyframes drink-hold{
+  0%  {transform:scale(1)}
+  80% {transform:scale(.9)}
+  100%{transform:scale(.88);background:rgba(217,64,64,.22)}
+}
 .drink-btn-custom.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .drinks-custom-slider{width:100%;margin-top:6px}
 
