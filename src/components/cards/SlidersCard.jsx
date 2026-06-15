@@ -2,53 +2,54 @@ import { useState, useRef } from 'react';
 import { slpColor, moodColor, waterColor, exColor, sliderBg } from '../../lib/colors.js';
 
 const DRINK_PRESETS = [
-  { emoji: '☕', label: 'Coffee', ml: 240 },
-  { emoji: '🥤', label: 'Can',    ml: 330 },
-  { emoji: '🍺', label: 'Pint',   ml: 568 },
+  { emoji: '☕', label: 'Coffee', l: 0.24 },
+  { emoji: '🥤', label: 'Can',    l: 0.33 },
+  { emoji: '🍺', label: 'Pint',   l: 0.57 },
 ];
 
 const LONG_PRESS_MS = 600;
 
-function fmtDrinks(ml) {
-  if (!ml) return '—';
-  return ml >= 1000 ? `${(ml / 1000).toFixed(1)}L` : `${ml}ml`;
+function fmtDrinks(l) {
+  if (!l) return '—';
+  return l < 1 ? `${Math.round(l * 1000)}ml` : `${l.toFixed(1)}L`;
 }
 
 /* ── Sliders card (numeric habits) ───────────────── */
 export function SlidersCard({ values, onUpdate, onCommit }) {
   const [showCustom, setShowCustom]   = useState(false);
-  const [pressingMl, setPressingMl]   = useState(null);
-  const timerRef    = useRef(null);
-  const didLongRef  = useRef(false);
+  const [pressingL, setPressingL]     = useState(null);
+  const timerRef   = useRef(null);
+  const didLongRef = useRef(false);
 
-  const slp    = values.sleep_hours ?? 8;
-  const mood   = values.mood ?? 3;
-  const water  = values.water ?? 0;
-  const ex     = values.exercise_min ?? 0;
-  const drinks = values.drinks_ml ?? 0;
+  const slp   = values.sleep_hours ?? 8;
+  const mood  = values.mood ?? 3;
+  const water = values.water ?? 0;
+  const ex    = values.exercise_min ?? 0;
+
+  function round2(v) { return Math.round(v * 100) / 100; }
 
   function startPress(p) {
     didLongRef.current = false;
-    setPressingMl(p.ml);
+    setPressingL(p.l);
     timerRef.current = setTimeout(() => {
       didLongRef.current = true;
-      setPressingMl(null);
-      onCommit('drinks_ml', Math.max(0, drinks - p.ml));
+      setPressingL(null);
+      onCommit('water', Math.max(0, round2(water - p.l)));
     }, LONG_PRESS_MS);
   }
 
   function endPress(p) {
     clearTimeout(timerRef.current);
-    setPressingMl(null);
+    setPressingL(null);
     if (!didLongRef.current) {
-      onCommit('drinks_ml', drinks + p.ml);
+      onCommit('water', round2(water + p.l));
     }
     didLongRef.current = false;
   }
 
   function cancelPress() {
     clearTimeout(timerRef.current);
-    setPressingMl(null);
+    setPressingL(null);
     didLongRef.current = false;
   }
 
@@ -82,18 +83,6 @@ export function SlidersCard({ values, onUpdate, onCommit }) {
       </div>
       <div className="slider-row">
         <div className="slider-meta">
-          <span className="slider-lbl">Water&thinsp;</span>
-          <span className="slider-val" style={{color:waterColor(water)}}>{water.toFixed(1)}</span>
-          <span className="slider-unit">L</span>
-        </div>
-        <input type="range" min={0} max={4} step={.1} value={water}
-          style={{background:sliderBg(water,0,4,waterColor(water)),'--thumb-c':waterColor(water)}}
-          onChange={e=>onUpdate('water',parseFloat(e.target.value))}
-          onMouseUp={e=>onCommit('water',parseFloat(e.target.value))}
-          onTouchEnd={e=>onCommit('water',parseFloat(e.target.value))} />
-      </div>
-      <div className="slider-row">
-        <div className="slider-meta">
           <span className="slider-lbl">Exercise&thinsp;</span>
           <span className="slider-val" style={{color:exColor(ex)}}>{ex>=60?'60+':ex}</span>
           <span className="slider-unit">MIN</span>
@@ -107,12 +96,12 @@ export function SlidersCard({ values, onUpdate, onCommit }) {
       <div className="slider-row drinks-row">
         <div className="slider-meta">
           <span className="slider-lbl">Drinks&thinsp;</span>
-          <span className="slider-val">{fmtDrinks(drinks)}</span>
+          <span className="slider-val" style={{color:waterColor(water)}}>{fmtDrinks(water)}</span>
         </div>
         <div className="drink-btns">
           {DRINK_PRESETS.map(p => (
-            <button key={p.ml}
-              className={`drink-btn${pressingMl === p.ml ? ' pressing' : ''}`}
+            <button key={p.l}
+              className={`drink-btn${pressingL === p.l ? ' pressing' : ''}`}
               title={`Tap to add ${p.label} · Hold to remove`}
               style={{touchAction:'none'}}
               onPointerDown={() => startPress(p)}
@@ -129,12 +118,12 @@ export function SlidersCard({ values, onUpdate, onCommit }) {
           </button>
         </div>
         {showCustom && (
-          <input type="range" min={0} max={3000} step={10} value={drinks}
+          <input type="range" min={0} max={4} step={.1} value={water}
             className="drinks-custom-slider"
-            style={{background:sliderBg(drinks,0,3000,'var(--accent)'),'--thumb-c':'var(--accent)'}}
-            onChange={e => onUpdate('drinks_ml', parseInt(e.target.value))}
-            onMouseUp={e => onCommit('drinks_ml', parseInt(e.target.value))}
-            onTouchEnd={e => onCommit('drinks_ml', parseInt(e.target.value))} />
+            style={{background:sliderBg(water,0,4,waterColor(water)),'--thumb-c':waterColor(water)}}
+            onChange={e => onUpdate('water', parseFloat(e.target.value))}
+            onMouseUp={e => onCommit('water', parseFloat(e.target.value))}
+            onTouchEnd={e => onCommit('water', parseFloat(e.target.value))} />
         )}
       </div>
     </div>
