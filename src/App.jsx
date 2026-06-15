@@ -17,7 +17,6 @@ import { ActionsCard } from './components/cards/ActionsCard.jsx';
 import { UpcomingCard } from './components/cards/UpcomingCard.jsx';
 import { ShortcutsCard } from './components/cards/ShortcutsCard.jsx';
 import { TodoCard } from './components/cards/TodoCard.jsx';
-import { GalleryCard } from './components/cards/GalleryCard.jsx';
 import {
   TweaksPanel, TweakSection, TweakRadio, TweakSelect,
   TweakSlider, TweakToggle, TweakColor,
@@ -178,8 +177,6 @@ export function App() {
         <ShortcutsCard onOpen={setModal}/>
 
         <TodoCard todos={todos} onToggle={id=>setTodos(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t))}/>
-
-        <GalleryCard/>
 
         <TweaksPanel title="Tweaks" open={tweaksOpen} onClose={()=>setTweaksOpen(false)}>
           <TweakSection label="Appearance"/>
