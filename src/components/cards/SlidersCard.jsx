@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { slpColor, moodColor, waterColor, exColor, sliderBg } from '../../lib/colors.js';
 
 const DRINK_PRESETS = [
@@ -7,6 +7,8 @@ const DRINK_PRESETS = [
   { emoji: '🍺', label: 'Pint',   ml: 568 },
 ];
 
+const LONG_PRESS_MS = 600;
+
 function fmtDrinks(ml) {
   if (!ml) return '—';
   return ml >= 1000 ? `${(ml / 1000).toFixed(1)}L` : `${ml}ml`;
@@ -14,12 +16,41 @@ function fmtDrinks(ml) {
 
 /* ── Sliders card (numeric habits) ───────────────── */
 export function SlidersCard({ values, onUpdate, onCommit }) {
-  const [showCustom, setShowCustom] = useState(false);
+  const [showCustom, setShowCustom]   = useState(false);
+  const [pressingMl, setPressingMl]   = useState(null);
+  const timerRef    = useRef(null);
+  const didLongRef  = useRef(false);
+
   const slp    = values.sleep_hours ?? 8;
   const mood   = values.mood ?? 3;
   const water  = values.water ?? 0;
   const ex     = values.exercise_min ?? 0;
   const drinks = values.drinks_ml ?? 0;
+
+  function startPress(p) {
+    didLongRef.current = false;
+    setPressingMl(p.ml);
+    timerRef.current = setTimeout(() => {
+      didLongRef.current = true;
+      setPressingMl(null);
+      onCommit('drinks_ml', Math.max(0, drinks - p.ml));
+    }, LONG_PRESS_MS);
+  }
+
+  function endPress(p) {
+    clearTimeout(timerRef.current);
+    setPressingMl(null);
+    if (!didLongRef.current) {
+      onCommit('drinks_ml', drinks + p.ml);
+    }
+    didLongRef.current = false;
+  }
+
+  function cancelPress() {
+    clearTimeout(timerRef.current);
+    setPressingMl(null);
+    didLongRef.current = false;
+  }
 
   return (
     <div className="card cell-sliders">
@@ -80,9 +111,15 @@ export function SlidersCard({ values, onUpdate, onCommit }) {
         </div>
         <div className="drink-btns">
           {DRINK_PRESETS.map(p => (
-            <button key={p.ml} className="drink-btn"
-              title={`Add ${p.label} (${p.ml}ml)`}
-              onClick={() => onCommit('drinks_ml', drinks + p.ml)}>
+            <button key={p.ml}
+              className={`drink-btn${pressingMl === p.ml ? ' pressing' : ''}`}
+              title={`Tap to add ${p.label} · Hold to remove`}
+              style={{touchAction:'none'}}
+              onPointerDown={() => startPress(p)}
+              onPointerUp={() => endPress(p)}
+              onPointerLeave={cancelPress}
+              onPointerCancel={cancelPress}
+              onContextMenu={e => e.preventDefault()}>
               {p.emoji} {p.label}
             </button>
           ))}
