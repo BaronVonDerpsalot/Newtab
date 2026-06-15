@@ -51,6 +51,9 @@ export async function saveState(S) {
 export async function fetchHistory(days=30) {
   try{const{data}=await db.from('daily_log').select('log_date,values,exercise_done,window_open,sessions_today').eq('user_id',USER_ID).order('log_date',{ascending:false}).limit(days);return data||[];}catch{return[];}
 }
+export async function saveHistoryRow(date, values) {
+  try{const{error}=await db.from('daily_log').upsert({user_id:USER_ID,log_date:date,values,updated_at:new Date().toISOString()},{onConflict:'user_id,log_date'});return!error;}catch{return false;}
+}
 export async function buildStats(S) {
   const rows=await fetchHistory(30),asc=[...rows].reverse();
   const avg=arr=>arr.length?Math.round((arr.reduce((a,b)=>a+b,0)/arr.length)*10)/10:null;

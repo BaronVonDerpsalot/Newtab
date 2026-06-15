@@ -436,6 +436,38 @@ input[type="range"]::-moz-range-thumb{
 .hist-bar{flex:1;background:var(--habit-green);border-radius:2px 2px 0 0;min-height:2px;opacity:.85}
 .hist-bar.empty{background:var(--border);opacity:1}
 .hist-empty{font-size:.8rem;color:var(--text-2);text-align:center;padding:1.5rem 0}
+.hist-edit-section{margin-top:1.25rem;border-top:1px solid var(--border);padding-top:.75rem}
+.hist-edit-toggle{width:100%;background:none;border:none;cursor:pointer;color:var(--text-2);
+  font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+  font-family:var(--font-sans);padding:.3rem 0;text-align:left;display:flex;justify-content:space-between;
+  align-items:center}
+.hist-edit-toggle:hover{color:var(--text-1)}
+.hist-edit-caret{font-size:.6rem;opacity:.6}
+.hist-edit-form{margin-top:.75rem;display:flex;flex-direction:column;gap:.5rem}
+.hist-edit-select{width:100%;padding:.45rem .6rem;border:1px solid var(--border);border-radius:6px;
+  background:var(--surface-2);color:var(--text-1);font-family:var(--font-sans);font-size:.8rem;cursor:pointer}
+.hist-edit-select:focus{outline:none;border-color:var(--border-strong)}
+.hist-edit-fields{display:flex;flex-direction:column;gap:.1rem;margin-top:.25rem}
+.hist-edit-row{display:flex;justify-content:space-between;align-items:center;
+  padding:.4rem 0;border-bottom:1px solid var(--border)}
+.hist-edit-row:last-child{border-bottom:none}
+.hist-edit-lbl{font-size:.78rem;color:var(--text-2);flex:1;padding-right:.5rem}
+.hist-edit-bool{padding:.25rem .65rem;border-radius:4px;border:1.5px solid var(--border-strong);
+  background:var(--surface);color:var(--text-2);font-family:var(--font-sans);font-size:.75rem;
+  cursor:pointer;min-width:42px;text-align:center}
+.hist-edit-bool:hover{border-color:var(--accent)}
+.hist-edit-bool.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.hist-edit-num-wrap{display:flex;align-items:center;gap:.3rem}
+.hist-edit-num{width:56px;padding:.25rem .4rem;border:1.5px solid var(--border-strong);border-radius:4px;
+  background:var(--surface);color:var(--text-1);font-family:var(--font-mono);font-size:.8rem;text-align:right}
+.hist-edit-num:focus{outline:none;border-color:var(--accent)}
+.hist-edit-unit{font-size:.7rem;color:var(--text-2);font-family:var(--font-mono);min-width:24px}
+.hist-edit-actions{margin-top:.5rem;display:flex;justify-content:flex-end}
+.hist-edit-save{padding:.4rem 1.1rem;border-radius:6px;border:1.5px solid var(--border-strong);
+  background:var(--surface);color:var(--text-1);font-family:var(--font-sans);font-size:.8rem;
+  font-weight:600;cursor:pointer}
+.hist-edit-save:hover:not(:disabled){background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.hist-edit-save:disabled{opacity:.6;cursor:default}
 
 /* ── Breathe ─────────────────────────────────────── */
 .breathe-circle{
