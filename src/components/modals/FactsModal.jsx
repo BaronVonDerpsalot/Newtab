@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { DEBRIEF_URL, SUPABASE_ANON_KEY, APP_TOKEN, WINDOW_OPEN_HOUR, WINDOW_CLOSE_HOUR } from '../../config.js';
+import { DEBRIEF_URL, SUPABASE_ANON_KEY, WINDOW_OPEN_HOUR, WINDOW_CLOSE_HOUR } from '../../config.js';
+import { getToken } from '../../lib/auth.js';
 import { BOOL_HABITS } from '../../config/habits.js';
 import { daysActive, exerciseDoneToday, windowOpenToday } from '../../lib/state.js';
 
@@ -67,7 +68,7 @@ export function FactsModal({ S }) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           'apikey': SUPABASE_ANON_KEY,
-          'x-app-token': APP_TOKEN,
+          'x-app-token': getToken(),
         },
         body: JSON.stringify({ system: buildPrompt(S) }),
       });

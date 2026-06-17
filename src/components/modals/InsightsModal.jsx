@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FEEDBACK_URL, SUPABASE_ANON_KEY, APP_TOKEN } from '../../config.js';
+import { FEEDBACK_URL, SUPABASE_ANON_KEY } from '../../config.js';
+import { getToken } from '../../lib/auth.js';
 import { buildStats, saveState } from '../../lib/state.js';
 
 /* ── Insights (real Claude API) ───────────────────── */
@@ -16,7 +17,7 @@ export function InsightsModal({ S }) {
     if(loading)return; setLoading(true); setBody('Reading your stats…'); setMeta('');
     try{
       const stats=await buildStats(S);
-      const res=await fetch(FEEDBACK_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON_KEY}`,'apikey':SUPABASE_ANON_KEY,'x-app-token':APP_TOKEN},body:JSON.stringify({stats})});
+      const res=await fetch(FEEDBACK_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON_KEY}`,'apikey':SUPABASE_ANON_KEY,'x-app-token':getToken()},body:JSON.stringify({stats})});
       if(!res.ok)throw new Error(res.status);
       const data=await res.json();
       const text=(data.feedback||'').trim()||'No response.';
