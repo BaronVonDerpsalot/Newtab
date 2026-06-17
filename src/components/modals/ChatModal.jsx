@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { CHAT_URL, SUPABASE_ANON_KEY, APP_TOKEN } from '../../config.js';
+import { CHAT_URL, SUPABASE_ANON_KEY } from '../../config.js';
+import { getToken } from '../../lib/auth.js';
 import { BOOL_HABITS } from '../../config/habits.js';
 import { daysActive, exerciseDoneToday, windowOpenToday } from '../../lib/state.js';
 
@@ -21,7 +22,7 @@ export function ChatModal({ S }) {
     const msgs=[...messages,{role:'user',content:text}];
     setMessages(msgs); setTyping(true);
     try {
-      const res=await fetch(CHAT_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON_KEY}`,'apikey':SUPABASE_ANON_KEY,'x-app-token':APP_TOKEN},body:JSON.stringify({system:buildSystem(S),messages:msgs})});
+      const res=await fetch(CHAT_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON_KEY}`,'apikey':SUPABASE_ANON_KEY,'x-app-token':getToken()},body:JSON.stringify({system:buildSystem(S),messages:msgs})});
       if(!res.ok)throw new Error(res.status);
       const data=await res.json();
       setMessages(m=>[...m,{role:'assistant',content:(data.reply||'').trim()||'No response.'}]);

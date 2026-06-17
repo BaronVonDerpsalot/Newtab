@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 Personal new-tab dashboard. **Vite + React 18**, synced to **Supabase**, deployed
-to **GitHub Pages**. Single user, password-gated. Was a single `index.html`
+to **GitHub Pages**. Single user, password-gated (verified server-side by the
+`auth` edge function — no secrets in the client bundle). Was a single `index.html`
 (CDN React + in-browser Babel); now a modular Vite project.
 
 ## Commands
@@ -40,7 +41,7 @@ src/
     time.js                    fmtTime, fmtDate, todayStr
     colors.js                  habit/slider color helpers, PALETTE
     suncalc.js                 sunrise/sunset → autoIsDark (auto theme)
-    auth.js                    cookie get/set
+    auth.js                    login() → auth fn; token stored in localStorage
   components/
     Ico.jsx                    shared SVG icon wrapper
     cards/                     dashboard cards, one file each (Clock, Stats,
@@ -50,7 +51,8 @@ src/
                                (Timer, Journal, Breathe, Resources, Chat,
                                Insights, Facts, System, History)
     tweaks/TweaksPanel.jsx     floating settings panel + all Tweak* controls
-supabase/functions/            edge functions: chat, feedback (Claude-backed)
+supabase/functions/            edge functions: auth (password→token),
+                               chat, feedback, debrief (Claude-backed)
 ```
 
 ## Common change → file
