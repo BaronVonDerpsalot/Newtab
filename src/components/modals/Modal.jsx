@@ -15,7 +15,7 @@ export function Modal({ id, onClose, S }) {
     const fn=e=>{if(e.key==='Escape')onClose();};
     window.addEventListener('keydown',fn); return()=>window.removeEventListener('keydown',fn);
   },[onClose]);
-  const isChatLike = id==='help';
+  const isChatLike = id==='help' || id==='insights';
   const contents = {
     timer:    <TimerModal/>,
     journal:  <JournalModal/>,

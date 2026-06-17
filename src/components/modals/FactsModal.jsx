@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { DEBRIEF_URL, SUPABASE_ANON_KEY, WINDOW_OPEN_HOUR, WINDOW_CLOSE_HOUR } from '../../config.js';
-import { getToken } from '../../lib/auth.js';
+import { WINDOW_OPEN_HOUR, WINDOW_CLOSE_HOUR } from '../../config.js';
 import { BOOL_HABITS } from '../../config/habits.js';
 import { daysActive, exerciseDoneToday, windowOpenToday } from '../../lib/state.js';
+import { ChatThread } from './ChatThread.jsx';
 
 function fmtHour(h) {
   if (h === 0 || h === 24) return 'midnight';
@@ -27,7 +27,6 @@ Current data:
 - Time: ${timeStr}
 - Sessions avoided (cumulative): ${S.sessionsAvoided}
 - Days active: ${days}
-- Current streak: ${days}
 - Exercise done today: ${exerciseDoneToday(S.exerciseDate) ? 'yes' : 'no'}
 - Window status: ${windowOpenToday() ? 'open' : 'closed'}
 - Window opens at: ${fmtHour(WINDOW_OPEN_HOUR)}. Closes at: ${fmtHour(WINDOW_CLOSE_HOUR)}.
@@ -45,42 +44,14 @@ Rules:
 - If it's a high-risk time of day (late evening, low mood, low sleep), name it plainly
 - Tone: like a straight-talking friend who's been watching your day. Warm where it's earned. Direct where it matters.
 - Length: 3-5 sentences maximum. No headers, no bullet points. Just a paragraph.
-- Never generic. Every word should be specific to their actual data right now.`;
+- Never generic. Every word should be specific to their actual data right now.
+
+After the debrief, the user may ask follow-up questions. Answer them directly and specifically from the data above, in the same straight-talking voice. Keep replies short. You only have today's snapshot — if they ask about longer-term trends, say so and point them to Insights.`;
 }
 
 /* ── Facts modal ──────────────────────────────────── */
 export function FactsModal({ S }) {
   const [view, setView] = useState('facts');
-  const [loading, setLoading] = useState(false);
-  const [debrief, setDebrief] = useState('');
-  const [error, setError] = useState('');
-
-  const runDebrief = async () => {
-    if (loading) return;
-    setLoading(true);
-    setError('');
-    setDebrief('');
-    setView('debrief');
-    try {
-      const res = await fetch(DEBRIEF_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'apikey': SUPABASE_ANON_KEY,
-          'x-app-token': getToken(),
-        },
-        body: JSON.stringify({ system: buildPrompt(S) }),
-      });
-      if (!res.ok) throw new Error(res.status);
-      const data = await res.json();
-      setDebrief((data.debrief || '').trim() || 'No response.');
-    } catch {
-      setError("Couldn't reach Claude right now. Try again in a moment.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div>
@@ -100,10 +71,9 @@ export function FactsModal({ S }) {
         <button
           className="action-btn strong"
           style={{ width: 'auto', padding: '7px 16px', marginLeft: 'auto' }}
-          disabled={loading}
-          onClick={runDebrief}
+          onClick={() => setView('debrief')}
         >
-          {loading ? 'Analysing…' : '↻ Today\'s Read'}
+          ↻ Today's Read
         </button>
       </div>
 
@@ -141,13 +111,12 @@ export function FactsModal({ S }) {
           <div className="callout">You quit 40-a-day. You quit drinking. The capacity is demonstrably intact. The strategy just needed fixing.</div>
         </div>
       ) : (
-        <div className={`insight-body${loading || error ? ' muted' : ''}`}>
-          {loading
-            ? 'Analysing your day…'
-            : error
-              ? error
-              : debrief}
-        </div>
+        <ChatThread
+          system={buildPrompt(S)}
+          seed="Give me my daily debrief."
+          placeholder="Ask a follow-up…"
+          thinkingLabel="Analysing your day…"
+        />
       )}
     </div>
   );
