@@ -45,10 +45,9 @@ src/
   components/
     Ico.jsx                    shared SVG icon wrapper
     cards/                     dashboard cards, one file each (Clock, Stats,
-                               Habits, Sliders, Prereqs, Actions, Upcoming,
-                               Shortcuts, Todo, Gallery)
+                               Habits, Sliders, Prereqs, Actions, Gallery)
     modals/                    one file per modal + Modal.jsx shell/router
-                               (Timer, Journal, Breathe, Resources, Chat,
+                               (Timer, Breathe, Resources, Chat, ChatThread,
                                Insights, Facts, System, History)
     tweaks/TweaksPanel.jsx     floating settings panel + all Tweak* controls
 supabase/functions/            edge functions: auth (password→token),
@@ -77,4 +76,5 @@ supabase/functions/            edge functions: auth (password→token),
   (run `npm install` to sync the lockfile). The version shows in the
   bottom-right live indicator.
 - Cross-device state lives in Supabase (`tab_state`, `daily_log` for user
-  `mike`); device-local bits (journal, todos, tweaks) live in `localStorage`.
+  `mike`); device-local bits (tweaks, last-good state cache) live in
+  `localStorage`.

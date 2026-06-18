@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { VERSION } from './config.js';
 import { useTweaks } from './hooks/useTweaks.js';
 import { autoIsDark } from './lib/suncalc.js';
-import { effectiveDateStr, isDayManuallyEnded, endDay } from './lib/time.js';
+import { effectiveDateStr, isDayManuallyEnded, endDay, todayStr } from './lib/time.js';
 import {
   freshDefaults, daysActive, exerciseDoneToday, windowOpenToday,
-  fetchState, saveState,
+  fetchState, saveState, fetchHistory, cacheState, readCachedState,
 } from './lib/state.js';
 
 import { ClockCard } from './components/cards/ClockCard.jsx';
@@ -14,9 +14,6 @@ import { HabitsCard } from './components/cards/HabitsCard.jsx';
 import { SlidersCard } from './components/cards/SlidersCard.jsx';
 import { PrereqsCard } from './components/cards/PrereqsCard.jsx';
 import { ActionsCard } from './components/cards/ActionsCard.jsx';
-import { UpcomingCard } from './components/cards/UpcomingCard.jsx';
-import { ShortcutsCard } from './components/cards/ShortcutsCard.jsx';
-import { TodoCard } from './components/cards/TodoCard.jsx';
 import { GalleryCard } from './components/cards/GalleryCard.jsx';
 import {
   TweaksPanel, TweakSection, TweakRadio, TweakSelect,
@@ -41,28 +38,26 @@ const TWEAK_DEFAULTS={
 /* ══ APP ════════════════════════════════════════════ */
 export function App() {
   const [t,setTweak]=useTweaks(TWEAK_DEFAULTS);
-  const [S,setS]=useState(null);
+  const [S,setS]=useState(()=>readCachedState());
   const [syncState,setSyncState]=useState('syncing');
   const [modal,setModal]=useState(null);
   const [tweaksOpen,setTweaksOpen]=useState(false);
-  const [todos,setTodos]=useState(()=>{
-    try{return JSON.parse(localStorage.getItem('nt_todos')||'null')||[
-      {id:1,text:'Read for 20 mins',done:false},{id:2,text:'Morning meditation',done:false},
-      {id:3,text:'Take medication',done:false},{id:4,text:'Plan meals',done:false},
-    ];}catch{return[];}
-  });
   const [time,setTime]=useState(new Date());
   const [dayEnded,setDayEnded]=useState(isDayManuallyEnded);
   const SRef=useRef(null);
   const effectiveDateRef=useRef(effectiveDateStr());
 
-  /* Initial load */
+  /* Initial load. On failure, keep any cached state rather than clobbering it
+     with fresh defaults (which would look like a wipe). */
   useEffect(()=>{
     fetchState().then(({state,ok})=>{
-      setS(state); SRef.current=state;
+      if(ok){
+        setS(state); SRef.current=state; cacheState(state);
+        if(state.theme&&state.theme!==TWEAK_DEFAULTS.theme) setTweak('theme',state.theme);
+      }else{
+        setS(prev=>prev||state); SRef.current=SRef.current||state;
+      }
       setSyncState(ok?'idle':'error');
-      /* Apply saved theme to tweaks */
-      if(state.theme&&state.theme!==TWEAK_DEFAULTS.theme) setTweak('theme',state.theme);
     });
   },[]);
 
@@ -74,7 +69,7 @@ export function App() {
       if(cur!==effectiveDateRef.current){
         effectiveDateRef.current=cur;
         setDayEnded(isDayManuallyEnded());
-        fetchState().then(({state,ok})=>{setS(state);SRef.current=state;setSyncState(ok?'idle':'error');});
+        fetchState().then(({state,ok})=>{if(ok){setS(state);SRef.current=state;cacheState(state);}setSyncState(ok?'idle':'error');});
       }
     },10000);
     return()=>clearInterval(id);
@@ -113,8 +108,8 @@ export function App() {
   /* Grid gap */
   useEffect(()=>{ document.documentElement.style.setProperty('--grid-gap',t.gridGap+'px'); },[t.gridGap]);
 
-  /* Todos persist */
-  useEffect(()=>{ try{localStorage.setItem('nt_todos',JSON.stringify(todos));}catch{} },[todos]);
+  /* Cache last-good state locally so the dashboard never blanks on a cold/slow load */
+  useEffect(()=>{ if(S) cacheState(S); },[S]);
 
   /* Save helper */
   const save=useCallback(async(next)=>{
@@ -129,7 +124,21 @@ export function App() {
     effectiveDateRef.current=cur;
     setDayEnded(true);
     setSyncState('syncing');
-    fetchState().then(({state,ok})=>{setS(state);SRef.current=state;setSyncState(ok?'idle':'error');});
+    fetchState().then(({state,ok})=>{if(ok){setS(state);SRef.current=state;cacheState(state);}setSyncState(ok?'idle':'error');});
+  },[]);
+
+  /* Export a full JSON backup (current state + all history) */
+  const exportData=useCallback(async()=>{
+    try{
+      const history=await fetchHistory(3650);
+      const payload={exportedAt:new Date().toISOString(),version:VERSION,state:SRef.current,history};
+      const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=`newtab-backup-${todayStr()}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }catch{ alert('Export failed — check your connection and try again.'); }
   },[]);
 
   const updateS=useCallback((updater)=>{
@@ -168,16 +177,12 @@ export function App() {
 
         <ActionsCard
           onMarkAvoided={()=>updateS(s=>({...s,sessionsAvoided:s.sessionsAvoided+1,sessionsToday:(s.sessionsToday||0)+1}))}
+          onLogSlip={()=>updateS(s=>({...s,slips:(s.slips||0)+1,slipsToday:(s.slipsToday||0)+1}))}
           onOpenModal={setModal}
           windowOpen={windowOpenToday()}
           dayEnded={dayEnded}
+          slipsToday={S.slipsToday||0}
           onEndDay={handleEndDay}/>
-
-        <UpcomingCard/>
-
-        <ShortcutsCard onOpen={setModal}/>
-
-        <TodoCard todos={todos} onToggle={id=>setTodos(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t))}/>
 
         <GalleryCard/>
 
@@ -204,7 +209,8 @@ export function App() {
         <span>{syncState==='syncing'?'Syncing':syncState==='error'?'Error — tap to retry':'Live'}</span>
         <span className="live-version">{VERSION}</span>
       </div>
-      <button className="reset-btn" onClick={()=>{if(confirm('Reset all tracking data?')){const fresh=freshDefaults();setS(fresh);save(fresh);}}}>Reset</button>
+      <button className="reset-btn" onClick={exportData} style={{left:'5.5rem'}} title="Download a JSON backup">Export</button>
+      <button className="reset-btn" onClick={()=>{if(window.prompt('This wipes ALL tracking data and cannot be undone.\n\nType RESET to confirm.')==='RESET'){const fresh=freshDefaults();setS(fresh);save(fresh);cacheState(fresh);}}}>Reset</button>
       <button className="tweaks-trigger" onClick={()=>setTweaksOpen(true)} title="Tweaks">✦</button>
 
       {modal&&<Modal id={modal} onClose={()=>setModal(null)} S={S}/>}
