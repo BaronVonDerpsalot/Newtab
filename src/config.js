@@ -17,4 +17,4 @@ export const DEBRIEF_URL       = `${SUPABASE_URL}/functions/v1/debrief`;
 export const LOCATION          = { lat: 51.5074, lng: -0.1278 };
 export const WINDOW_OPEN_HOUR  = 21;
 export const WINDOW_CLOSE_HOUR = 24;
-export const VERSION           = 'v2.2.0';
+export const VERSION           = 'v2.3.0';

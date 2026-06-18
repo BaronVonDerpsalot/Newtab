@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { TimerModal } from './TimerModal.jsx';
-import { JournalModal } from './JournalModal.jsx';
 import { BreatheModal } from './BreatheModal.jsx';
 import { ResourcesModal } from './ResourcesModal.jsx';
 import { ChatModal } from './ChatModal.jsx';
@@ -18,7 +17,6 @@ export function Modal({ id, onClose, S }) {
   const isChatLike = id==='help' || id==='insights';
   const contents = {
     timer:    <TimerModal/>,
-    journal:  <JournalModal/>,
     breathe:  <BreatheModal/>,
     resources:<ResourcesModal/>,
     help:     <ChatModal S={S}/>,
