@@ -14,9 +14,6 @@ import { HabitsCard } from './components/cards/HabitsCard.jsx';
 import { SlidersCard } from './components/cards/SlidersCard.jsx';
 import { PrereqsCard } from './components/cards/PrereqsCard.jsx';
 import { ActionsCard } from './components/cards/ActionsCard.jsx';
-import { UpcomingCard } from './components/cards/UpcomingCard.jsx';
-import { ShortcutsCard } from './components/cards/ShortcutsCard.jsx';
-import { TodoCard } from './components/cards/TodoCard.jsx';
 import {
   TweaksPanel, TweakSection, TweakRadio, TweakSelect,
   TweakSlider, TweakToggle, TweakColor,
@@ -44,13 +41,7 @@ export function App() {
   const [syncState,setSyncState]=useState('syncing');
   const [modal,setModal]=useState(null);
   const [tweaksOpen,setTweaksOpen]=useState(false);
-  const [todos,setTodos]=useState(()=>{
-    try{return JSON.parse(localStorage.getItem('nt_todos')||'null')||[
-      {id:1,text:'Read for 20 mins',done:false},{id:2,text:'Morning meditation',done:false},
-      {id:3,text:'Take medication',done:false},{id:4,text:'Plan meals',done:false},
-    ];}catch{return[];}
-  });
-  const [time,setTime]=useState(new Date());
+const [time,setTime]=useState(new Date());
   const [dayEnded,setDayEnded]=useState(isDayManuallyEnded);
   const SRef=useRef(null);
   const effectiveDateRef=useRef(effectiveDateStr());
@@ -112,10 +103,7 @@ export function App() {
   /* Grid gap */
   useEffect(()=>{ document.documentElement.style.setProperty('--grid-gap',t.gridGap+'px'); },[t.gridGap]);
 
-  /* Todos persist */
-  useEffect(()=>{ try{localStorage.setItem('nt_todos',JSON.stringify(todos));}catch{} },[todos]);
-
-  /* Save helper */
+/* Save helper */
   const save=useCallback(async(next)=>{
     setSyncState('syncing');
     const ok=await saveState(next);
@@ -172,11 +160,6 @@ export function App() {
           dayEnded={dayEnded}
           onEndDay={handleEndDay}/>
 
-        <UpcomingCard/>
-
-        <ShortcutsCard onOpen={setModal}/>
-
-        <TodoCard todos={todos} onToggle={id=>setTodos(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t))}/>
 
         <TweaksPanel title="Tweaks" open={tweaksOpen} onClose={()=>setTweaksOpen(false)}>
           <TweakSection label="Appearance"/>
